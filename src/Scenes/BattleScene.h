@@ -11,7 +11,7 @@
 #include "../Items/Characters/Character.h"
 
 class BattleScene : public Scene {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     explicit BattleScene(QObject *parent);
@@ -39,7 +39,9 @@ private:
 
     Map *map;
     Character *character;
+    Character *character2; // 第二个角色
     Armor *spareArmor;
+    Armor *spareArmor2; // 第二个角色的备用护甲
 };
 
 
