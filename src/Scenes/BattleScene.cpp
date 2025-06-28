@@ -3,13 +3,16 @@
 //
 
 #include <QDebug>
+#include <QKeyEvent> // 确保包含了 QKeyEvent
 #include "BattleScene.h"
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
 
+const qreal GRAVITY = 0.5; // 定义重力加速度
+
 BattleScene::BattleScene(QObject *parent) : Scene(parent) {
-    // This is useful if you want the scene to have the exact same dimensions as the view
+    // ... (构造函数的其余部分保持不变) ...
     setSceneRect(0, 0, 1280, 720);
     map = new Battlefield();
     character = new Link();
@@ -33,6 +36,7 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent) {
     spareArmor2->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.25, map->getFloorHeight());
 }
 
+// ... (processInput 保持不变) ...
 void BattleScene::processInput() {
     Scene::processInput();
     if (character != nullptr) {
@@ -42,6 +46,7 @@ void BattleScene::processInput() {
         character2->processInput();
     }
 }
+
 
 void BattleScene::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
@@ -60,6 +65,11 @@ void BattleScene::keyPressEvent(QKeyEvent *event) {
             character->setPickDown(true);
         }
         break;
+    case Qt::Key_W: // 第一个角色的跳跃
+        if (character != nullptr) {
+            character->jump();
+        }
+        break;
     // 第二个角色的操作
     case Qt::Key_Left:
         if (character2 != nullptr) {
@@ -76,11 +86,17 @@ void BattleScene::keyPressEvent(QKeyEvent *event) {
             character2->setPickDown(true);
         }
         break;
+    case Qt::Key_Up: // 第二个角色的跳跃
+        if (character2 != nullptr) {
+            character2->jump();
+        }
+        break;
     default:
         Scene::keyPressEvent(event);
     }
 }
 
+// ... (keyReleaseEvent 保持不变) ...
 void BattleScene::keyReleaseEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Qt::Key_A:
@@ -125,14 +141,18 @@ void BattleScene::update() {
 
 void BattleScene::processMovement() {
     Scene::processMovement();
+    qreal floorHeight = map->getFloorHeight();
     if (character != nullptr) {
-        character->setPos(character->pos() + character->getVelocity() * (double) deltaTime);
+        character->applyGravity(GRAVITY, floorHeight);
+        character->setPos(character->pos() + character->getVelocity() * (double) deltaTime/15);
     }
-    if (character2 != nullptr) { // 处理第二个角色的移动
-        character2->setPos(character2->pos() + character2->getVelocity() * (double) deltaTime);
+    if (character2 != nullptr) {
+        character2->applyGravity(GRAVITY, floorHeight);
+        character2->setPos(character2->pos() + character2->getVelocity() * (double) deltaTime/15);
     }
 }
 
+// ... (processPicking, findNearestUnmountedMountable, 和 pickupMountable 保持不变) ...
 void BattleScene::processPicking() {
     Scene::processPicking();
     if (character->isPicking()) {

@@ -15,24 +15,18 @@ public:
     explicit Character(QGraphicsItem *parent);
 
     [[nodiscard]] bool isLeftDown() const;
-
     void setLeftDown(bool leftDown);
-
     [[nodiscard]] bool isRightDown() const;
-
     void setRightDown(bool rightDown);
-
     [[nodiscard]] bool isPickDown() const;
-
     void setPickDown(bool pickDown);
-
     [[nodiscard]] const QPointF &getVelocity() const;
-
+    void setVelocity(const QPointF &velocity);
     [[nodiscard]] bool isPicking() const;
 
-    void setVelocity(const QPointF &velocity);
-
     void processInput();
+    void jump(); // 新增跳跃方法
+    void applyGravity(qreal gravity, qreal floorHeight); // 新增应用重力的方法
 
     Armor* pickupArmor(Armor* newArmor);
 
@@ -41,11 +35,12 @@ protected:
     LegEquipment *legEquipment{};
     Armor *armor{};
     QPointF velocity{};
-//    QGraphicsEllipseItem *ellipseItem; // for debugging
+    //    QGraphicsEllipseItem *ellipseItem; // for debugging
 private:
     bool leftDown{}, rightDown{}, pickDown{};
     bool lastPickDown{};
     bool picking{};
+    bool onGround{true}; // 新增一个变量来追踪角色是否在地面上
 };
 
 
