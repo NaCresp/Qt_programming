@@ -12,7 +12,7 @@ MyGame::MyGame(QWidget *parent)
 
     // 创建一个 QGraphicsView
     view = new QGraphicsView(this);
-    view->setFixedSize(1280, 720);
+    view->setFixedSize(1040, 656);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -20,7 +20,7 @@ MyGame::MyGame(QWidget *parent)
     stackedWidget = new QStackedWidget(this);
     QWidget *startMenuWidget = new QWidget;
     QGraphicsView *startMenuView = new QGraphicsView(startMenuScene, startMenuWidget);
-    startMenuView->setFixedSize(1280, 720);
+    startMenuView->setFixedSize(1200, 720);
     startMenuView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     startMenuView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 

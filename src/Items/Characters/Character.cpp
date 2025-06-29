@@ -77,17 +77,17 @@ void Character::jump() {
     }
 }
 
-void Character::applyGravity(qreal gravity, qreal floorHeight) {
+void Character::applyGravity(qreal gravity) {
     velocity.setY(velocity.y() + gravity);
-
-    // 如果角色掉到地面以下，将他放回地面
-    if (pos().y() + velocity.y() > floorHeight) {
-        setY(floorHeight);
-        velocity.setY(0);
-        onGround = true;
-    }
 }
 
+void Character::setOnGround(bool onGround) {
+    this->onGround = onGround;
+}
+
+bool Character::isOnGround() const {
+    return onGround;
+}
 
 bool Character::isPicking() const {
     return picking;

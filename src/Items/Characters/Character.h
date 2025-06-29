@@ -25,8 +25,12 @@ public:
     [[nodiscard]] bool isPicking() const;
 
     void processInput();
-    void jump(); // 新增跳跃方法
-    void applyGravity(qreal gravity, qreal floorHeight); // 新增应用重力的方法
+    void jump();
+    void applyGravity(qreal gravity); // 简化：只应用重力，不检测碰撞
+
+    // 新增方法，用于从外部设置和查询地面状态
+    void setOnGround(bool onGround);
+    [[nodiscard]] bool isOnGround() const;
 
     Armor* pickupArmor(Armor* newArmor);
 
@@ -40,7 +44,7 @@ private:
     bool leftDown{}, rightDown{}, pickDown{};
     bool lastPickDown{};
     bool picking{};
-    bool onGround{true}; // 新增一个变量来追踪角色是否在地面上
+    bool onGround{true};
 };
 
 

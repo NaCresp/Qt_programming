@@ -9,6 +9,7 @@
 #include "Scene.h"
 #include "../Items/Maps/Map.h"
 #include "../Items/Characters/Character.h"
+#include <QGraphicsRectItem>
 
 class BattleScene : public Scene {
     Q_OBJECT
@@ -42,6 +43,7 @@ private:
     Character *character2; // 第二个角色
     Armor *spareArmor;
     Armor *spareArmor2; // 第二个角色的备用护甲
+    QList<QGraphicsRectItem*> platforms;
 };
 
 
