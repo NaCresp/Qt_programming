@@ -4,10 +4,12 @@
 
 #include "HeadEquipment.h"
 
-HeadEquipment::HeadEquipment(QGraphicsItem *parent, const QString &pixmapPath) : Item(parent, pixmapPath) {
+HeadEquipment::HeadEquipment(QGraphicsItem *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
+{
 }
 
-void HeadEquipment::mountToParent() {
+void HeadEquipment::mountToParent()
+{
     Mountable::mountToParent();
     setScale(0.6);
     setPos(-55, -180);

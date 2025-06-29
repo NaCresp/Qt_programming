@@ -5,7 +5,8 @@
 #include <QPushButton>
 #include <QGraphicsProxyWidget>
 
-class StartMenuScene : public QGraphicsScene {
+class StartMenuScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:
@@ -18,4 +19,4 @@ private:
     QPushButton *startButton;
 };
 
-#endif //STARTMENUSCENE_H
+#endif // STARTMENUSCENE_H

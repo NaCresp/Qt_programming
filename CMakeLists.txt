@@ -47,6 +47,10 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/Maps/Battlefield.h
         src/Items/Mountable.cpp
         src/Items/Mountable.h
+        src/Items/Weapon/Weapon.h          #
+        src/Items/Weapon/Weapon.cpp        #
+        src/Items/Weapon/Fist.h            #
+        src/Items/Weapon/Fist.cpp          #
         src/Items/Armors/FlamebreakerArmor.cpp
         src/Items/Armors/FlamebreakerArmor.h)
 target_link_libraries(qt_programming_2024

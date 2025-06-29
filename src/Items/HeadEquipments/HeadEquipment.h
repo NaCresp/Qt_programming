@@ -5,16 +5,15 @@
 #ifndef QT_PROGRAMMING_2024_HEADEQUIPMENT_H
 #define QT_PROGRAMMING_2024_HEADEQUIPMENT_H
 
-
 #include "../Item.h"
 #include "../Mountable.h"
 
-class HeadEquipment: public Item, public Mountable {
+class HeadEquipment : public Item, public Mountable
+{
 public:
     explicit HeadEquipment(QGraphicsItem *parent, const QString &pixmapPath);
 
     void mountToParent() override;
 };
 
-
-#endif //QT_PROGRAMMING_2024_HEADEQUIPMENT_H
+#endif // QT_PROGRAMMING_2024_HEADEQUIPMENT_H

@@ -12,7 +12,6 @@
 #include "Scenes/StartMenuScene.h"
 #include "Scenes/BattleScene.h"
 
-
 class MyGame : public QMainWindow
 {
     Q_OBJECT
@@ -30,4 +29,4 @@ private:
     BattleScene *battleScene;
 };
 
-#endif //QT_PROGRAMMING_2024_MYGAME_H
+#endif // QT_PROGRAMMING_2024_MYGAME_H

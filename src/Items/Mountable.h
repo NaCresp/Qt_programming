@@ -5,8 +5,8 @@
 #ifndef QT_PROGRAMMING_2024_MOUNTABLE_H
 #define QT_PROGRAMMING_2024_MOUNTABLE_H
 
-
-class Mountable {
+class Mountable
+{
 public:
     virtual void mountToParent();
 
@@ -18,5 +18,4 @@ private:
     bool mounted{};
 };
 
-
-#endif //QT_PROGRAMMING_2024_MOUNTABLE_H
+#endif // QT_PROGRAMMING_2024_MOUNTABLE_H

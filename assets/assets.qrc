@@ -5,5 +5,6 @@
         <file>Items/HeadEquipments/Head/head.png</file>
         <file>Items/LegEquipments/Leg/leg.png</file>
         <file>Items/Maps/Battlefield/g9tOqth.png</file>
+        <file>Items/Weapon/Fist/fist.png</file>
     </qresource>
 </RCC>

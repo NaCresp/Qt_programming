@@ -8,8 +8,9 @@
 #include <QGraphicsScene>
 #include <QTimer>
 
-class Scene : public QGraphicsScene {
-Q_OBJECT
+class Scene : public QGraphicsScene
+{
+    Q_OBJECT
 
 public:
     explicit Scene(QObject *parent);
@@ -34,5 +35,4 @@ private:
     qint64 lastTime{-1};
 };
 
-
-#endif //QT_PROGRAMMING_2024_SCENE_H
+#endif // QT_PROGRAMMING_2024_SCENE_H

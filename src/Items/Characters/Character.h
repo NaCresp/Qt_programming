@@ -9,8 +9,10 @@
 #include "../HeadEquipments/HeadEquipment.h"
 #include "../Armors/Armor.h"
 #include "../LegEquipments/LegEquipment.h"
+#include "../Weapon/Weapon.h"
 
-class Character : public Item {
+class Character : public Item
+{
 public:
     explicit Character(QGraphicsItem *parent);
 
@@ -23,6 +25,9 @@ public:
     [[nodiscard]] const QPointF &getVelocity() const;
     void setVelocity(const QPointF &velocity);
     [[nodiscard]] bool isPicking() const;
+    void setAttackDown(bool attackDown);
+    [[nodiscard]] bool isAttackDown() const;
+    void attack();
 
     void processInput();
     void jump();
@@ -32,12 +37,13 @@ public:
     void setOnGround(bool onGround);
     [[nodiscard]] bool isOnGround() const;
 
-    Armor* pickupArmor(Armor* newArmor);
+    Armor *pickupArmor(Armor *newArmor);
 
 protected:
     HeadEquipment *headEquipment{};
     LegEquipment *legEquipment{};
     Armor *armor{};
+    Weapon *weapon{};
     QPointF velocity{};
     //    QGraphicsEllipseItem *ellipseItem; // for debugging
 private:
@@ -45,7 +51,10 @@ private:
     bool lastPickDown{};
     bool picking{};
     bool onGround{true};
+
+    bool attackDown{};
+    bool lastAttackDown{};
+    bool attacking{};
 };
 
-
-#endif //QT_PROGRAMMING_2024_CHARACTER_H
+#endif // QT_PROGRAMMING_2024_CHARACTER_H

@@ -9,7 +9,8 @@
 #include <QPointF>
 #include "../Item.h"
 
-class Map : public Item {
+class Map : public Item
+{
 public:
     explicit Map(QGraphicsItem *parent = nullptr, const QString &pixmapPath = "");
 
@@ -20,5 +21,4 @@ public:
     virtual QPointF getSpawnPos();
 };
 
-
-#endif //QT_PROGRAMMING_2024_MAP_H
+#endif // QT_PROGRAMMING_2024_MAP_H

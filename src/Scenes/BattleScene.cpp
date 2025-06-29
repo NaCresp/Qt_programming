@@ -11,7 +11,8 @@
 
 const qreal GRAVITY = 0.5; // 定义重力加速度
 
-BattleScene::BattleScene(QObject *parent) : Scene(parent) {
+BattleScene::BattleScene(QObject *parent) : Scene(parent)
+{
     // This is useful if you want the scene to have the exact same dimensions as the view
     setSceneRect(0, 0, 1040, 656);
     map = new Battlefield();
@@ -20,7 +21,7 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent) {
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor(); // 为第二个角色创建备用护甲
 
-    const qreal characterScale = 0.3; //缩小值
+    const qreal characterScale = 0.3; // 缩小值
     character->setScale(characterScale);
     character2->setScale(characterScale);
 
@@ -31,7 +32,7 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent) {
     addItem(spareArmor2); // 将第二个备用护甲添加到场景
 
     map->scaleToFitScene(this);
-    character->setPos(map->getSpawnPos() - QPointF(100, 0)); // 调整第一个角色的出生点
+    character->setPos(map->getSpawnPos() - QPointF(100, 0));  // 调整第一个角色的出生点
     character2->setPos(map->getSpawnPos() + QPointF(100, 0)); // 设置第二个角色的出生点
 
     spareArmor->unmount();
@@ -48,63 +49,88 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent) {
     platforms[1]->setBrush(QColor(173, 216, 230)); // 浅蓝色
     platforms[2]->setBrush(QColor(139, 69, 19));   // 棕色
 
-    for(auto p : platforms) {
+    for (auto p : platforms)
+    {
         p->setPen(Qt::NoPen); // 平台不需要边框
     }
 }
 
-void BattleScene::processInput() {
+void BattleScene::processInput()
+{
     Scene::processInput();
-    if (character != nullptr) {
+    if (character != nullptr)
+    {
         character->processInput();
     }
-    if (character2 != nullptr) { // 处理第二个角色的输入
+    if (character2 != nullptr)
+    { // 处理第二个角色的输入
         character2->processInput();
     }
 }
 
-
-void BattleScene::keyPressEvent(QKeyEvent *event) {
-    switch (event->key()) {
+void BattleScene::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key())
+    {
     case Qt::Key_A:
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->setLeftDown(true);
         }
         break;
     case Qt::Key_D:
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->setRightDown(true);
         }
         break;
     case Qt::Key_J:
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->setPickDown(true);
         }
         break;
     case Qt::Key_W: // 第一个角色的跳跃
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->jump();
+        }
+        break;
+    case Qt::Key_K: // 攻击
+        if (character != nullptr)
+        {
+            character->setAttackDown(true);
         }
         break;
     // 第二个角色的操作
     case Qt::Key_Left:
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->setLeftDown(true);
         }
         break;
     case Qt::Key_Right:
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->setRightDown(true);
         }
         break;
     case Qt::Key_1:
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->setPickDown(true);
         }
         break;
     case Qt::Key_Up: // 第二个角色的跳跃
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->jump();
+        }
+        break;
+    case Qt::Key_2: //
+        if (character2 != nullptr)
+        {
+            character2->setAttackDown(true);
         }
         break;
     default:
@@ -112,37 +138,57 @@ void BattleScene::keyPressEvent(QKeyEvent *event) {
     }
 }
 
-void BattleScene::keyReleaseEvent(QKeyEvent *event) {
-    switch (event->key()) {
+void BattleScene::keyReleaseEvent(QKeyEvent *event)
+{
+    switch (event->key())
+    {
     case Qt::Key_A:
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->setLeftDown(false);
         }
         break;
     case Qt::Key_D:
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->setRightDown(false);
         }
         break;
     case Qt::Key_J:
-        if (character != nullptr) {
+        if (character != nullptr)
+        {
             character->setPickDown(false);
+        }
+        break;
+    case Qt::Key_K:
+        if (character != nullptr)
+        {
+            character->setAttackDown(false);
         }
         break;
     // 第二个角色的操作
     case Qt::Key_Left:
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->setLeftDown(false);
         }
         break;
     case Qt::Key_Right:
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->setRightDown(false);
         }
         break;
     case Qt::Key_1:
-        if (character2 != nullptr) {
+        if (character2 != nullptr)
+        {
             character2->setPickDown(false);
+        }
+        break;
+    case Qt::Key_2: // 新增
+        if (character2 != nullptr)
+        {
+            character2->setAttackDown(false);
         }
         break;
     default:
@@ -150,15 +196,19 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event) {
     }
 }
 
-void BattleScene::update() {
+void BattleScene::update()
+{
     Scene::update();
 }
 
-void BattleScene::processMovement() {
+void BattleScene::processMovement()
+{
     Scene::processMovement();
 
-    for (auto* character : {this->character, this->character2}) {
-        if (!character) continue;
+    for (auto *character : {this->character, this->character2})
+    {
+        if (!character)
+            continue;
 
         // 1. 默认角色不在地面上，除非检测到碰撞
         character->setOnGround(false);
@@ -176,16 +226,21 @@ void BattleScene::processMovement() {
         qreal effectiveFloorY = map->getFloorHeight();
 
         // 5. 检测是否将要降落在某个平台上
-        if (character->getVelocity().y() >= 0) { // 只在下落时检测
-            for (auto p : platforms) {
+        if (character->getVelocity().y() >= 0)
+        { // 只在下落时检测
+            for (auto p : platforms)
+            {
                 QRectF pRect = p->sceneBoundingRect();
 
                 // 检查水平方向是否重叠
-                if (charRect.right() > pRect.left() && charRect.left() < pRect.right()) {
+                if (charRect.right() > pRect.left() && charRect.left() < pRect.right())
+                {
                     // 检查垂直方向是否即将发生碰撞 (当前在平台上方，下一帧将在平台下方)
-                    if (charRect.bottom() <= pRect.top() && (charRect.bottom() + nextVelocity.y()) >= pRect.top()) {
+                    if (charRect.bottom() <= pRect.top() && (charRect.bottom() + nextVelocity.y()) >= pRect.top())
+                    {
                         // 如果这个平台比已知的地面要高，则更新有效地面
-                        if (pRect.top() < effectiveFloorY) {
+                        if (pRect.top() < effectiveFloorY)
+                        {
                             effectiveFloorY = pRect.top();
                         }
                     }
@@ -194,14 +249,17 @@ void BattleScene::processMovement() {
         }
 
         // 6. 根据有效的地面，进行碰撞处理并更新最终位置
-        if ((character->pos().y() + feetOffset + nextVelocity.y()) >= effectiveFloorY) {
+        if ((character->pos().y() + feetOffset + nextVelocity.y()) >= effectiveFloorY)
+        {
             // 将要穿过地面，修正位置，让角色恰好站在地面上
             character->setPos(nextPos.x(), effectiveFloorY - feetOffset);
 
             // 停止垂直下落并设置角色在地面上
             character->setVelocity(QPointF(character->getVelocity().x(), 0));
             character->setOnGround(true);
-        } else {
+        }
+        else
+        {
             // 没有碰撞，正常移动
             character->setPos(nextPos);
         }
@@ -209,31 +267,41 @@ void BattleScene::processMovement() {
 }
 
 // ... (processPicking, findNearestUnmountedMountable, 和 pickupMountable 保持不变) ...
-void BattleScene::processPicking() {
+void BattleScene::processPicking()
+{
     Scene::processPicking();
-    if (character->isPicking()) {
+    if (character->isPicking())
+    {
         auto mountable = findNearestUnmountedMountable(character->pos(), 100.);
-        if (mountable != nullptr) {
+        if (mountable != nullptr)
+        {
             spareArmor = dynamic_cast<Armor *>(pickupMountable(character, mountable));
         }
     }
-    if (character2->isPicking()) { // 处理第二个角色的拾取
+    if (character2->isPicking())
+    { // 处理第二个角色的拾取
         auto mountable = findNearestUnmountedMountable(character2->pos(), 100.);
-        if (mountable != nullptr) {
+        if (mountable != nullptr)
+        {
             spareArmor2 = dynamic_cast<Armor *>(pickupMountable(character2, mountable));
         }
     }
 }
 
-Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal distance_threshold) {
+Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal distance_threshold)
+{
     Mountable *nearest = nullptr;
     qreal minDistance = distance_threshold;
 
-    for (QGraphicsItem *item: items()) {
-        if (auto mountable = dynamic_cast<Mountable *>(item)) {
-            if (!mountable->isMounted()) {
+    for (QGraphicsItem *item : items())
+    {
+        if (auto mountable = dynamic_cast<Mountable *>(item))
+        {
+            if (!mountable->isMounted())
+            {
                 qreal distance = QLineF(pos, item->pos()).length();
-                if (distance < minDistance) {
+                if (distance < minDistance)
+                {
                     minDistance = distance;
                     nearest = mountable;
                 }
@@ -244,9 +312,11 @@ Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal 
     return nearest;
 }
 
-Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable) {
+Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable)
+{
     // Limitation: currently only supports armor
-    if (auto armor = dynamic_cast<Armor *>(mountable)) {
+    if (auto armor = dynamic_cast<Armor *>(mountable))
+    {
         return character->pickupArmor(armor);
     }
     return nullptr;

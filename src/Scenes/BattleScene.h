@@ -11,7 +11,8 @@
 #include "../Items/Characters/Character.h"
 #include <QGraphicsRectItem>
 
-class BattleScene : public Scene {
+class BattleScene : public Scene
+{
     Q_OBJECT
 
 public:
@@ -33,18 +34,16 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
 
 private:
-
     Mountable *findNearestUnmountedMountable(const QPointF &pos, qreal distance_threshold = std::numeric_limits<qreal>::max());
 
-    static Mountable * pickupMountable(Character *character, Mountable *mountable);
+    static Mountable *pickupMountable(Character *character, Mountable *mountable);
 
     Map *map;
     Character *character;
     Character *character2; // 第二个角色
     Armor *spareArmor;
     Armor *spareArmor2; // 第二个角色的备用护甲
-    QList<QGraphicsRectItem*> platforms;
+    QList<QGraphicsRectItem *> platforms;
 };
 
-
-#endif //QT_PROGRAMMING_2024_BATTLESCENE_H
+#endif // QT_PROGRAMMING_2024_BATTLESCENE_H

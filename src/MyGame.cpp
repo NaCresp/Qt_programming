@@ -41,7 +41,8 @@ MyGame::MyGame(QWidget *parent)
     stackedWidget->setCurrentWidget(startMenuView);
 }
 
-void MyGame::showGameScene() {
+void MyGame::showGameScene()
+{
     // 切换到游戏场景
     stackedWidget->setCurrentWidget(view);
     battleScene->startLoop();
