@@ -1,5 +1,7 @@
 #include "Fist.h"
 
+const int FIST_Y_POSITION = -105;
+
 // 构造函数：初始化我们的手动动画系统
 Fist::Fist(QObject *parent) : Weapon(parent, ":/Items/Weapon/Fist/fist.png")
 {
@@ -10,7 +12,8 @@ Fist::Fist(QObject *parent) : Weapon(parent, ":/Items/Weapon/Fist/fist.png")
         animation = nullptr;
     }
 
-    setPos(-20, -90);
+    // 使用我们定义的高度常量来设置位置
+    setPos(-20, FIST_Y_POSITION);
     setScale(0.2);
     setVisible(false);
     isAttacking = false;
@@ -60,7 +63,8 @@ void Fist::updateAnimation()
         // 短暂延迟后（让玩家能看清攻击动作），重置拳头状态
         QTimer::singleShot(50, this, [this](){
             setVisible(false);
-            setPos(-20, -90);
+            // 使用我们定义的高度常量来重置位置
+            setPos(-20, FIST_Y_POSITION);
             isAttacking = false; // 解除攻击锁
         });
 

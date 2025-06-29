@@ -102,6 +102,15 @@ void BattleScene::keyPressEvent(QKeyEvent *event)
             character->setAttackDown(true);
         }
         break;
+    // --- 新增代码 ---
+    case Qt::Key_S: // 角色1下蹲
+        if (character != nullptr)
+        {
+            character->setSquatDown(true);
+        }
+        break;
+        // --- 新增代码结束 ---
+
     // 第二个角色的操作
     case Qt::Key_Left:
         if (character2 != nullptr)
@@ -133,6 +142,14 @@ void BattleScene::keyPressEvent(QKeyEvent *event)
             character2->setAttackDown(true);
         }
         break;
+    // --- 新增代码 ---
+    case Qt::Key_Down: // 角色2下蹲
+        if (character2 != nullptr)
+        {
+            character2->setSquatDown(true);
+        }
+        break;
+    // --- 新增代码结束 ---
     default:
         Scene::keyPressEvent(event);
     }
@@ -166,6 +183,15 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
             character->setAttackDown(false);
         }
         break;
+    // --- 新增代码 ---
+    case Qt::Key_S: // 角色1站起
+        if (character != nullptr)
+        {
+            character->setSquatDown(false);
+        }
+        break;
+        // --- 新增代码结束 ---
+
     // 第二个角色的操作
     case Qt::Key_Left:
         if (character2 != nullptr)
@@ -191,6 +217,14 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
             character2->setAttackDown(false);
         }
         break;
+    // --- 新增代码 ---
+    case Qt::Key_Down: // 角色2站起
+        if (character2 != nullptr)
+        {
+            character2->setSquatDown(false);
+        }
+        break;
+    // --- 新增代码结束 ---
     default:
         Scene::keyReleaseEvent(event);
     }

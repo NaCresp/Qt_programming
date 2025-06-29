@@ -27,6 +27,12 @@ public:
     [[nodiscard]] bool isPicking() const;
     void setAttackDown(bool attackDown);
     [[nodiscard]] bool isAttackDown() const;
+
+    // --- 新增代码 ---
+    void setSquatDown(bool squatDown);
+    [[nodiscard]] bool isSquatting() const;
+    // --- 新增代码结束 ---
+
     void attack();
 
     void processInput();
@@ -55,6 +61,13 @@ private:
     bool attackDown{};
     bool lastAttackDown{};
     bool attacking{};
+
+    // --- 新增代码 ---
+    bool squatDown{};
+    bool isSquattingState{}; // 使用新名称以避免与函数名冲突
+    void squat();
+    void standUp();
+    // --- 新增代码结束 ---
 };
 
 #endif // QT_PROGRAMMING_2024_CHARACTER_H

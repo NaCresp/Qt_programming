@@ -14,6 +14,8 @@ public:
     explicit LegEquipment(QObject *parent, const QString &pixmapPath);
 
     void mountToParent() override;
+
+    virtual void setSquatMode(bool enabled) = 0;
 };
 
 #endif // QT_PROGRAMMING_2024_LEGEQUIPMENT_H

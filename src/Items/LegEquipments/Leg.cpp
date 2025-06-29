@@ -4,6 +4,24 @@
 
 #include "Leg.h"
 
-WellWornTrousers::WellWornTrousers(QObject *parent) : LegEquipment(parent, ":/Items/LegEquipments/Leg/leg.png")
+WellWornTrousers::WellWornTrousers(QObject *parent)
+    : LegEquipment(parent, ":/Items/LegEquipments/Leg/leg.png"),
+    normalPixmap(QPixmap(":/Items/LegEquipments/Leg/leg.png")),
+    squatPixmap(QPixmap(":/Items/LegEquipments/SquatLeg/squatLeg.png"))
 {
+}
+
+void WellWornTrousers::setSquatMode(bool enabled)
+{
+    if (pixmapItem)
+    {
+        if (enabled)
+        {
+            pixmapItem->setPixmap(squatPixmap);
+        }
+        else
+        {
+            pixmapItem->setPixmap(normalPixmap);
+        }
+    }
 }
