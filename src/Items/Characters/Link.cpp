@@ -4,9 +4,9 @@
 
 #include <memory>
 #include "Link.h"
-#include "../HeadEquipments/CapOfTheHero.h"
-#include "../Armors/OldShirt.h"
-#include "../LegEquipments/WellWornTrousers.h"
+#include "../HeadEquipments/Head.h"
+#include "../Armors/body.h"
+#include "../LegEquipments/Leg.h"
 
 Link::Link(QGraphicsItem *parent) : Character(parent) {
     headEquipment = new CapOfTheHero(this);

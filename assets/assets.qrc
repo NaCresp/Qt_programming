@@ -1,9 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file>Items/Armors/OldShirt/body.png</file>
+        <file>Items/Armors/Body/body.png</file>
         <file>Items/Armors/FlamebreakerArmor/BotW_Flamebreaker_Armor_Icon.png</file>
-        <file>Items/HeadEquipments/CapOfTheHero/head.png</file>
-        <file>Items/LegEquipments/WellWornTrousers/leg.png</file>
+        <file>Items/HeadEquipments/Head/head.png</file>
+        <file>Items/LegEquipments/Leg/leg.png</file>
         <file>Items/Maps/Battlefield/g9tOqth.png</file>
     </qresource>
 </RCC>
