@@ -20,7 +20,7 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent) {
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor(); // 为第二个角色创建备用护甲
 
-    const qreal characterScale = 0.8; //缩小值
+    const qreal characterScale = 0.3; //缩小值
     character->setScale(characterScale);
     character2->setScale(characterScale);
 

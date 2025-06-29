@@ -9,6 +9,6 @@ HeadEquipment::HeadEquipment(QGraphicsItem *parent, const QString &pixmapPath) :
 
 void HeadEquipment::mountToParent() {
     Mountable::mountToParent();
-    setScale(0.4);
-    setPos(-30, -210);
+    setScale(0.6);
+    setPos(-55, -180);
 }
