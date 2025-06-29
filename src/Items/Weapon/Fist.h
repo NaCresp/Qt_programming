@@ -6,7 +6,7 @@
 class Fist : public Weapon
 {
 public:
-    explicit Fist(QGraphicsItem *parent);
+    explicit Fist(QObject *parent);
     void attack() override;
 };
 

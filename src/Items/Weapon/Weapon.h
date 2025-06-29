@@ -8,7 +8,7 @@ class Weapon : public Item
 {
     Q_OBJECT
 public:
-    explicit Weapon(QGraphicsItem *parent, const QString &pixmapPath);
+    explicit Weapon(QObject *parent, const QString &pixmapPath);
     virtual void attack() = 0;
 
 protected:

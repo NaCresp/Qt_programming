@@ -10,7 +10,7 @@
 class FlamebreakerArmor : public Armor
 {
 public:
-    explicit FlamebreakerArmor(QGraphicsItem *parent = nullptr);
+    explicit FlamebreakerArmor(QObject *parent = nullptr);
 };
 
 #endif // QT_PROGRAMMING_2024_FLAMEBREAKERARMOR_H

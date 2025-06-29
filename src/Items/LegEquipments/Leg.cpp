@@ -4,6 +4,6 @@
 
 #include "Leg.h"
 
-WellWornTrousers::WellWornTrousers(QGraphicsItem *parent) : LegEquipment(parent, ":/Items/LegEquipments/Leg/leg.png")
+WellWornTrousers::WellWornTrousers(QObject *parent) : LegEquipment(parent, ":/Items/LegEquipments/Leg/leg.png")
 {
 }

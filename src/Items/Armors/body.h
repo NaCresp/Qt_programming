@@ -10,7 +10,7 @@
 class OldShirt : public Armor
 {
 public:
-    explicit OldShirt(QGraphicsItem *parent);
+    explicit OldShirt(QObject *parent);
 };
 
 #endif // QT_PROGRAMMING_2024_OLDSHIRT_H

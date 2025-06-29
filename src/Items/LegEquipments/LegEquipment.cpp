@@ -4,7 +4,7 @@
 
 #include "LegEquipment.h"
 
-LegEquipment::LegEquipment(QGraphicsItem *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
+LegEquipment::LegEquipment(QObject *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
 {
 }
 

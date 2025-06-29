@@ -8,15 +8,14 @@
 
 const qreal JUMP_STRENGTH = -15.0; // 定义跳跃力度
 
-Character::Character(QGraphicsItem *parent) : Item(parent, "")
+Character::Character(QObject *parent) : Item(parent, "")
 {
     //    ellipseItem = new QGraphicsEllipseItem(-5, -5, 10, 10, this);
     //    // Optionally, set some properties of the ellipse
     //    ellipseItem->setBrush(Qt::green);          // Fill color
     //    ellipseItem->setZValue(1);
+    weapon = new Fist(this);
 }
-
-weapon = new Fist(this);
 
 // ... (isLeftDown, setLeftDown, isRightDown, setRightDown, isPickDown, setPickDown 的代码保持不变) ...
 bool Character::isLeftDown() const

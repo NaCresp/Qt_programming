@@ -8,7 +8,7 @@
 #include "../Armors/body.h"
 #include "../LegEquipments/Leg.h"
 
-Link::Link(QGraphicsItem *parent) : Character(parent)
+Link::Link(QObject *parent) : Character(parent)
 {
     headEquipment = new CapOfTheHero(this);
     legEquipment = new WellWornTrousers(this);

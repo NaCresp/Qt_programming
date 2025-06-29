@@ -11,7 +11,7 @@
 class Armor : public Item, public Mountable
 {
 public:
-    explicit Armor(QGraphicsItem *parent, const QString &pixmapPath);
+    explicit Armor(QObject *parent, const QString &pixmapPath);
 
     void mountToParent() override;
 

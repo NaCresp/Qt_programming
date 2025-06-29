@@ -14,7 +14,7 @@
 class Character : public Item
 {
 public:
-    explicit Character(QGraphicsItem *parent);
+    explicit Character(QObject *parent);
 
     [[nodiscard]] bool isLeftDown() const;
     void setLeftDown(bool leftDown);

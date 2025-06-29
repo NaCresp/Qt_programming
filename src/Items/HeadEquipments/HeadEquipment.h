@@ -11,7 +11,7 @@
 class HeadEquipment : public Item, public Mountable
 {
 public:
-    explicit HeadEquipment(QGraphicsItem *parent, const QString &pixmapPath);
+    explicit HeadEquipment(QObject *parent, const QString &pixmapPath);
 
     void mountToParent() override;
 };

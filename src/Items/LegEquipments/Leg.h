@@ -10,7 +10,7 @@
 class WellWornTrousers : public LegEquipment
 {
 public:
-    explicit WellWornTrousers(QGraphicsItem *parent);
+    explicit WellWornTrousers(QObject *parent);
 };
 
 #endif // QT_PROGRAMMING_2024_WELLWORNTROUSERS_H

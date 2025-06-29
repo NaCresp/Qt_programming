@@ -1,7 +1,7 @@
 #include "Fist.h"
 #include <QTimer>
 
-Fist::Fist(QGraphicsItem *parent) : Weapon(parent, ":/Items/Weapon/Fist/fist.png")
+Fist::Fist(QObject *parent) : Weapon(parent, ":/Items/Weapon/Fist/fist.png")
 {
     setPos(20, -90);
     setScale(0.2);

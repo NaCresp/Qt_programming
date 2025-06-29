@@ -10,7 +10,7 @@
 class CapOfTheHero : public HeadEquipment
 {
 public:
-    explicit CapOfTheHero(QGraphicsItem *parent);
+    explicit CapOfTheHero(QObject *parent);
 };
 
 #endif // QT_PROGRAMMING_2024_CAPOFTHEHERO_H

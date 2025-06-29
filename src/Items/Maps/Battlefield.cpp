@@ -4,7 +4,7 @@
 
 #include "Battlefield.h"
 
-Battlefield::Battlefield(QGraphicsItem *parent) : Map(parent, ":/Items/Maps/Battlefield/g9tOqth.png") {}
+Battlefield::Battlefield(QObject *parent) : Map(parent, ":/Items/Maps/Battlefield/g9tOqth.png") {}
 
 qreal Battlefield::getFloorHeight()
 {

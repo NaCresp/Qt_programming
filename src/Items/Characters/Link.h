@@ -10,7 +10,7 @@
 class Link : public Character
 {
 public:
-    explicit Link(QGraphicsItem *parent = nullptr);
+    explicit Link(QObject *parent = nullptr);
 };
 
 #endif // QT_PROGRAMMING_2024_LINK_H

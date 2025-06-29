@@ -4,7 +4,7 @@
 
 #include "Armor.h"
 
-Armor::Armor(QGraphicsItem *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
+Armor::Armor(QObject *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
 {
 }
 

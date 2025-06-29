@@ -4,7 +4,7 @@
 
 #include "HeadEquipment.h"
 
-HeadEquipment::HeadEquipment(QGraphicsItem *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
+HeadEquipment::HeadEquipment(QObject *parent, const QString &pixmapPath) : Item(parent, pixmapPath)
 {
 }
 

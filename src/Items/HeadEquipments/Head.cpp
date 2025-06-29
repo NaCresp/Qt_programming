@@ -4,5 +4,5 @@
 
 #include "Head.h"
 
-CapOfTheHero::CapOfTheHero(QGraphicsItem *parent) : HeadEquipment(parent,
+CapOfTheHero::CapOfTheHero(QObject *parent) : HeadEquipment(parent,
                                                                   ":/Items/HeadEquipments/Head/head.png") {}

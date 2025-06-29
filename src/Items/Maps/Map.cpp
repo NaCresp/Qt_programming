@@ -4,7 +4,7 @@
 
 #include "Map.h"
 
-Map::Map(QGraphicsItem *parent, const QString &pixmapPath) : Item(parent, pixmapPath) {}
+Map::Map(QObject *parent, const QString &pixmapPath) : Item(parent, pixmapPath) {}
 
 void Map::scaleToFitScene(QGraphicsScene *scene)
 {

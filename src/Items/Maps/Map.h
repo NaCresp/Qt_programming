@@ -12,7 +12,7 @@
 class Map : public Item
 {
 public:
-    explicit Map(QGraphicsItem *parent = nullptr, const QString &pixmapPath = "");
+    explicit Map(QObject *parent = nullptr, const QString &pixmapPath = "");
 
     void scaleToFitScene(QGraphicsScene *scene);
 
