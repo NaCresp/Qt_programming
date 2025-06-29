@@ -6,7 +6,8 @@
 
 class Weapon : public Item
 {
-    Q_OBJECT
+    Q_OBJECT // <--- 必须添加此行
+
 public:
     explicit Weapon(QObject *parent, const QString &pixmapPath);
     virtual void attack() = 0;

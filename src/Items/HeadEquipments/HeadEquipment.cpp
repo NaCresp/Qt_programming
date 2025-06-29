@@ -12,5 +12,5 @@ void HeadEquipment::mountToParent()
 {
     Mountable::mountToParent();
     setScale(0.6);
-    setPos(-55, -180);
+    setPos(-5, -180);
 }

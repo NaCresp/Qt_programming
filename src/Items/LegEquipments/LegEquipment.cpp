@@ -12,5 +12,5 @@ void LegEquipment::mountToParent()
 {
     Mountable::mountToParent();
     setScale(0.8);
-    setPos(-60, -40);
+    setPos(-10, -40);
 }

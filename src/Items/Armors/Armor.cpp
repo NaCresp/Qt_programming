@@ -12,7 +12,7 @@ void Armor::mountToParent()
 {
     Mountable::mountToParent();
     setScale(0.6);
-    setPos(-48, -108);
+    setPos(2, -108);
     if (pixmapItem != nullptr)
     {
         pixmapItem->setPos(0, 0);
