@@ -3,7 +3,8 @@
 //
 
 #include <QDebug>
-#include <QKeyEvent> // 确保包含了 QKeyEvent
+#include <QKeyEvent>
+#include <QPen>
 #include "BattleScene.h"
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
@@ -53,6 +54,13 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     {
         p->setPen(Qt::NoPen); // 平台不需要边框
     }
+
+    // 将 hidingZone 直接添加到场景，确保坐标系一致
+    // 您可以在这里修改隐藏区域的位置和大小 (x, y, width, height)
+    hidingZone = new QGraphicsRectItem(50, 380, 320, 20);
+    hidingZone->setBrush(QColor(0, 0, 255, 50)); // 使用半透明蓝色以便观察
+    hidingZone->setPen(Qt::NoPen);
+    addItem(hidingZone);
 }
 
 void BattleScene::processInput()
@@ -63,7 +71,7 @@ void BattleScene::processInput()
         character->processInput();
     }
     if (character2 != nullptr)
-    { // 处理第二个角色的输入
+    {
         character2->processInput();
     }
 }
@@ -90,26 +98,24 @@ void BattleScene::keyPressEvent(QKeyEvent *event)
             character->setPickDown(true);
         }
         break;
-    case Qt::Key_W: // 第一个角色的跳跃
+    case Qt::Key_W:
         if (character != nullptr)
         {
             character->jump();
         }
         break;
-    case Qt::Key_K: // 攻击
+    case Qt::Key_K:
         if (character != nullptr)
         {
             character->setAttackDown(true);
         }
         break;
-    // --- 新增代码 ---
-    case Qt::Key_S: // 角色1下蹲
+    case Qt::Key_S:
         if (character != nullptr)
         {
             character->setSquatDown(true);
         }
         break;
-        // --- 新增代码结束 ---
 
     // 第二个角色的操作
     case Qt::Key_Left:
@@ -130,26 +136,24 @@ void BattleScene::keyPressEvent(QKeyEvent *event)
             character2->setPickDown(true);
         }
         break;
-    case Qt::Key_Up: // 第二个角色的跳跃
+    case Qt::Key_Up:
         if (character2 != nullptr)
         {
             character2->jump();
         }
         break;
-    case Qt::Key_2: //
+    case Qt::Key_2:
         if (character2 != nullptr)
         {
             character2->setAttackDown(true);
         }
         break;
-    // --- 新增代码 ---
-    case Qt::Key_Down: // 角色2下蹲
+    case Qt::Key_Down:
         if (character2 != nullptr)
         {
             character2->setSquatDown(true);
         }
         break;
-    // --- 新增代码结束 ---
     default:
         Scene::keyPressEvent(event);
     }
@@ -183,14 +187,12 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
             character->setAttackDown(false);
         }
         break;
-    // --- 新增代码 ---
-    case Qt::Key_S: // 角色1站起
+    case Qt::Key_S:
         if (character != nullptr)
         {
             character->setSquatDown(false);
         }
         break;
-        // --- 新增代码结束 ---
 
     // 第二个角色的操作
     case Qt::Key_Left:
@@ -211,20 +213,18 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
             character2->setPickDown(false);
         }
         break;
-    case Qt::Key_2: // 新增
+    case Qt::Key_2:
         if (character2 != nullptr)
         {
             character2->setAttackDown(false);
         }
         break;
-    // --- 新增代码 ---
-    case Qt::Key_Down: // 角色2站起
+    case Qt::Key_Down:
         if (character2 != nullptr)
         {
             character2->setSquatDown(false);
         }
         break;
-    // --- 新增代码结束 ---
     default:
         Scene::keyReleaseEvent(event);
     }
@@ -239,40 +239,40 @@ void BattleScene::processMovement()
 {
     Scene::processMovement();
 
-    for (auto *character : {this->character, this->character2})
+    for (auto *currentChar : {this->character, this->character2})
     {
-        if (!character)
+        if (!currentChar)
             continue;
 
         // 1. 默认角色不在地面上，除非检测到碰撞
-        character->setOnGround(false);
+        currentChar->setOnGround(false);
 
         // 2. 对角色的垂直速度应用重力
-        character->applyGravity(GRAVITY);
+        currentChar->applyGravity(GRAVITY);
 
         // 3. 计算角色在下一帧的理论位置
-        QRectF charRect = character->sceneBoundingRect();
-        qreal feetOffset = charRect.bottom() - character->pos().y();
-        QPointF nextVelocity = character->getVelocity() * (double)deltaTime / 15.0;
-        QPointF nextPos = character->pos() + nextVelocity;
+        // 由于 sceneBoundingRect() 不可靠，我们使用一个估算的碰撞盒进行物理模拟
+        const qreal estimatedCharWidth = 50;  // 估算的角色宽度
+        const qreal estimatedCharHeight = 150; // 估算的角色高度
+        QRectF charPhysicsRect = QRectF(currentChar->x() - estimatedCharWidth / 2, currentChar->y() - estimatedCharHeight, estimatedCharWidth, estimatedCharHeight);
+
+        qreal feetY = currentChar->y();
+        QPointF nextVelocity = currentChar->getVelocity() * (double)deltaTime / 15.0;
+        QPointF nextPos = currentChar->pos() + nextVelocity;
 
         // 4. 确定角色脚下有效的地面 Y 坐标 (默认为地图底层)
         qreal effectiveFloorY = map->getFloorHeight();
 
         // 5. 检测是否将要降落在某个平台上
-        if (character->getVelocity().y() >= 0)
-        { // 只在下落时检测
+        if (currentChar->getVelocity().y() >= 0)
+        {
             for (auto p : platforms)
             {
                 QRectF pRect = p->sceneBoundingRect();
-
-                // 检查水平方向是否重叠
-                if (charRect.right() > pRect.left() && charRect.left() < pRect.right())
+                if (charPhysicsRect.right() > pRect.left() && charPhysicsRect.left() < pRect.right())
                 {
-                    // 检查垂直方向是否即将发生碰撞 (当前在平台上方，下一帧将在平台下方)
-                    if (charRect.bottom() <= pRect.top() && (charRect.bottom() + nextVelocity.y()) >= pRect.top())
+                    if (feetY <= pRect.top() && (feetY + nextVelocity.y()) >= pRect.top())
                     {
-                        // 如果这个平台比已知的地面要高，则更新有效地面
                         if (pRect.top() < effectiveFloorY)
                         {
                             effectiveFloorY = pRect.top();
@@ -283,24 +283,37 @@ void BattleScene::processMovement()
         }
 
         // 6. 根据有效的地面，进行碰撞处理并更新最终位置
-        if ((character->pos().y() + feetOffset + nextVelocity.y()) >= effectiveFloorY)
+        if ((feetY + nextVelocity.y()) >= effectiveFloorY)
         {
-            // 将要穿过地面，修正位置，让角色恰好站在地面上
-            character->setPos(nextPos.x(), effectiveFloorY - feetOffset);
-
-            // 停止垂直下落并设置角色在地面上
-            character->setVelocity(QPointF(character->getVelocity().x(), 0));
-            character->setOnGround(true);
+            currentChar->setPos(nextPos.x(), effectiveFloorY);
+            currentChar->setVelocity(QPointF(currentChar->getVelocity().x(), 0));
+            currentChar->setOnGround(true);
         }
         else
         {
-            // 没有碰撞，正常移动
-            character->setPos(nextPos);
+            currentChar->setPos(nextPos);
+        }
+
+        // --- 最终核心逻辑 ---
+        // 手动构建角色的碰撞区域 (Hitbox)
+        // 您可以在这里微调 Hitbox 的大小和位置偏移，以达到最佳效果
+        QRectF characterHitbox(currentChar->x() - 25, currentChar->y() - 100, 50, 150);
+
+        // **关键修正**：在 hidingZone 的 rect() 上调用 intersects
+        bool isInHidingZone = hidingZone->rect().intersects(characterHitbox);
+
+        if (currentChar->isSquatting() && isInHidingZone)
+        {
+            currentChar->setVisible(false);
+        }
+        else
+        {
+            currentChar->setVisible(true);
         }
     }
 }
 
-// ... (processPicking, findNearestUnmountedMountable, 和 pickupMountable 保持不变) ...
+
 void BattleScene::processPicking()
 {
     Scene::processPicking();
@@ -313,7 +326,7 @@ void BattleScene::processPicking()
         }
     }
     if (character2->isPicking())
-    { // 处理第二个角色的拾取
+    {
         auto mountable = findNearestUnmountedMountable(character2->pos(), 100.);
         if (mountable != nullptr)
         {
@@ -348,7 +361,6 @@ Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal 
 
 Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable)
 {
-    // Limitation: currently only supports armor
     if (auto armor = dynamic_cast<Armor *>(mountable))
     {
         return character->pickupArmor(armor);

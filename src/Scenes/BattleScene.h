@@ -44,6 +44,7 @@ private:
     Armor *spareArmor;
     Armor *spareArmor2; // 第二个角色的备用护甲
     QList<QGraphicsRectItem *> platforms;
+    QGraphicsRectItem *hidingZone; // 隐藏区域
 };
 
 #endif // QT_PROGRAMMING_2024_BATTLESCENE_H
