@@ -5,12 +5,17 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QPen>
+#include <QFont> // 包含头文件
 #include "BattleScene.h"
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
 
 const qreal GRAVITY = 0.5; // 定义重力加速度
+
+// --- 新增代码：定义血条的尺寸 ---
+const qreal HP_BAR_WIDTH = 200.0;
+const qreal HP_BAR_HEIGHT = 20.0;
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
 {
@@ -56,12 +61,79 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     }
 
     // 将 hidingZone 直接添加到场景，确保坐标系一致
-    // 您可以在这里修改隐藏区域的位置和大小 (x, y, width, height)
     hidingZone = new QGraphicsRectItem(50, 380, 320, 20);
-    hidingZone->setBrush(QColor(0, 0, 255, 50)); // 使用半透明蓝色以便观察
     hidingZone->setPen(Qt::NoPen);
     addItem(hidingZone);
+
+    // --- 新增代码：初始化血条UI ---
+    // 玩家1的血条
+    player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+    player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+    player1HpText = new QGraphicsTextItem();
+
+    // 玩家2的血条
+    player2HpBarBg = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+    player2HpBar = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+    player2HpText = new QGraphicsTextItem();
+
+    // 设置颜色
+    player1HpBarBg->setBrush(Qt::darkGray);
+    player1HpBar->setBrush(Qt::red);
+    player2HpBarBg->setBrush(Qt::darkGray);
+    player2HpBar->setBrush(Qt::red);
+
+    // 设置字体和颜色
+    QFont font("Arial", 12, QFont::Bold);
+    player1HpText->setFont(font);
+    player2HpText->setFont(font);
+    player1HpText->setDefaultTextColor(Qt::white);
+    player2HpText->setDefaultTextColor(Qt::white);
+
+    // 设置文字位置（在血条下方）
+    player1HpText->setPos(20, 10 + HP_BAR_HEIGHT);
+    player2HpText->setPos(width() - HP_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT);
+
+    // 设置Z值，确保前景在背景之上
+    player1HpBarBg->setZValue(10);
+    player1HpBar->setZValue(11);
+    player1HpText->setZValue(12);
+    player2HpBarBg->setZValue(10);
+    player2HpBar->setZValue(11);
+    player2HpText->setZValue(12);
+
+    // 添加到场景
+    addItem(player1HpBarBg);
+    addItem(player1HpBar);
+    addItem(player1HpText);
+    addItem(player2HpBarBg);
+    addItem(player2HpBar);
+    addItem(player2HpText);
+
+    updateHpDisplay(); // 初始化显示
 }
+
+void BattleScene::updateHpDisplay()
+{
+    if (!character || !character2) return;
+
+    // 更新玩家1的血量
+    int p1_hp = character->getCurrentHp();
+    int p1_max_hp = character->getMaxHp();
+    qreal p1_percent = (p1_max_hp > 0) ? (static_cast<qreal>(p1_hp) / p1_max_hp) : 0.0;
+    // 根据百分比计算血条前景的宽度
+    player1HpBar->setRect(20, 10, HP_BAR_WIDTH * p1_percent, HP_BAR_HEIGHT);
+    player1HpText->setPlainText(QString("%1 / %2").arg(p1_hp).arg(p1_max_hp));
+
+
+    // 更新玩家2的血量
+    int p2_hp = character2->getCurrentHp();
+    int p2_max_hp = character2->getMaxHp();
+    qreal p2_percent = (p2_max_hp > 0) ? (static_cast<qreal>(p2_hp) / p2_max_hp) : 0.0;
+    // 根据百分比计算血条前景的宽度
+    player2HpBar->setRect(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH * p2_percent, HP_BAR_HEIGHT);
+    player2HpText->setPlainText(QString("%1 / %2").arg(p2_hp).arg(p2_max_hp));
+}
+
 
 void BattleScene::processInput()
 {
@@ -233,6 +305,35 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
 void BattleScene::update()
 {
     Scene::update();
+    updateHpDisplay(); // 在每一帧都更新血量显示
+    processAttacks(); // 在每一帧都处理攻击检测
+}
+
+void BattleScene::processAttacks()
+{
+    if (!character || !character2) return;
+
+    // 获取两个角色的武器
+    Weapon* weapon1 = character->getWeapon();
+    Weapon* weapon2 = character2->getWeapon();
+
+    // 构建角色的碰撞盒
+    QRectF hitbox1(character->x() - 25, character->y() - 100, 50, 150);
+    QRectF hitbox2(character2->x() - 25, character2->y() - 100, 50, 150);
+
+    // 检测角色1的攻击
+    if (weapon1 && weapon1->isVisible() && weapon1->sceneBoundingRect().intersects(hitbox2))
+    {
+        character2->takeDamage(10); // 角色2受到伤害
+        weapon1->setVisible(false); // 让武器消失，避免一次攻击造成多次伤害
+    }
+
+    // 检测角色2的攻击
+    if (weapon2 && weapon2->isVisible() && weapon2->sceneBoundingRect().intersects(hitbox1))
+    {
+        character->takeDamage(10); // 角色1受到伤害
+        weapon2->setVisible(false); // 让武器消失，避免一次攻击造成多次伤害
+    }
 }
 
 void BattleScene::processMovement()
@@ -244,6 +345,13 @@ void BattleScene::processMovement()
         if (!currentChar)
             continue;
 
+        // 如果角色血量为0，则跳过移动处理 (可以添加死亡动画等)
+        if (currentChar->getCurrentHp() <= 0)
+        {
+            // currentChar->setVisible(false); // 比如直接让角色消失
+            continue;
+        }
+
         // 1. 默认角色不在地面上，除非检测到碰撞
         currentChar->setOnGround(false);
 
@@ -251,9 +359,8 @@ void BattleScene::processMovement()
         currentChar->applyGravity(GRAVITY);
 
         // 3. 计算角色在下一帧的理论位置
-        // 由于 sceneBoundingRect() 不可靠，我们使用一个估算的碰撞盒进行物理模拟
-        const qreal estimatedCharWidth = 50;  // 估算的角色宽度
-        const qreal estimatedCharHeight = 150; // 估算的角色高度
+        const qreal estimatedCharWidth = 50;
+        const qreal estimatedCharHeight = 150;
         QRectF charPhysicsRect = QRectF(currentChar->x() - estimatedCharWidth / 2, currentChar->y() - estimatedCharHeight, estimatedCharWidth, estimatedCharHeight);
 
         qreal feetY = currentChar->y();
@@ -294,12 +401,8 @@ void BattleScene::processMovement()
             currentChar->setPos(nextPos);
         }
 
-        // --- 最终核心逻辑 ---
-        // 手动构建角色的碰撞区域 (Hitbox)
-        // 您可以在这里微调 Hitbox 的大小和位置偏移，以达到最佳效果
+        // 隐藏区域逻辑
         QRectF characterHitbox(currentChar->x() - 25, currentChar->y() - 100, 50, 150);
-
-        // **关键修正**：在 hidingZone 的 rect() 上调用 intersects
         bool isInHidingZone = hidingZone->rect().intersects(characterHitbox);
 
         if (currentChar->isSquatting() && isInHidingZone)

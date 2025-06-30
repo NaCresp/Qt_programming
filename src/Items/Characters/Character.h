@@ -28,10 +28,8 @@ public:
     void setAttackDown(bool attackDown);
     [[nodiscard]] bool isAttackDown() const;
 
-    // --- 新增代码 ---
     void setSquatDown(bool squatDown);
     [[nodiscard]] bool isSquatting() const;
-    // --- 新增代码结束 ---
 
     void attack();
 
@@ -39,11 +37,16 @@ public:
     void jump();
     void applyGravity(qreal gravity); // 简化：只应用重力，不检测碰撞
 
-    // 新增方法，用于从外部设置和查询地面状态
     void setOnGround(bool onGround);
     [[nodiscard]] bool isOnGround() const;
 
     Armor *pickupArmor(Armor *newArmor);
+
+    // --- 新增代码：血量系统 ---
+    void takeDamage(int amount);
+    [[nodiscard]] int getCurrentHp() const;
+    [[nodiscard]] int getMaxHp() const;
+    [[nodiscard]] Weapon* getWeapon() const; // 新增一个获取武器的公有方法，用于碰撞检测
 
 protected:
     HeadEquipment *headEquipment{};
@@ -62,12 +65,14 @@ private:
     bool lastAttackDown{};
     bool attacking{};
 
-    // --- 新增代码 ---
     bool squatDown{};
     bool isSquattingState{}; // 使用新名称以避免与函数名冲突
     void squat();
     void standUp();
-    // --- 新增代码结束 ---
+
+    // --- 新增代码：血量系统 ---
+    int maxHp;
+    int currentHp;
 };
 
 #endif // QT_PROGRAMMING_2024_CHARACTER_H

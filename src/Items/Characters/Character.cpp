@@ -16,6 +16,10 @@ Character::Character(QObject *parent) : Item(parent, "")
     //    ellipseItem->setBrush(Qt::green);          // Fill color
     //    ellipseItem->setZValue(1);
     weapon = new Fist(this);
+
+    // --- 新增代码：初始化血量 ---
+    maxHp = 100;
+    currentHp = maxHp;
 }
 
 // ... (除了 squat 和 standUp 之外的其他函数保持不变) ...
@@ -233,4 +237,29 @@ Armor *Character::pickupArmor(Armor *newArmor)
     newArmor->mountToParent();
     armor = newArmor;
     return oldArmor;
+}
+
+// --- 新增代码：血量系统 ---
+void Character::takeDamage(int amount)
+{
+    currentHp -= amount;
+    if (currentHp < 0)
+    {
+        currentHp = 0;
+    }
+}
+
+int Character::getCurrentHp() const
+{
+    return currentHp;
+}
+
+int Character::getMaxHp() const
+{
+    return maxHp;
+}
+
+Weapon *Character::getWeapon() const
+{
+    return weapon;
 }
