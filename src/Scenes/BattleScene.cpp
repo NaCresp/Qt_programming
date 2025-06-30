@@ -318,9 +318,9 @@ void BattleScene::processAttacks()
     Weapon* weapon1 = character->getWeapon();
     Weapon* weapon2 = character2->getWeapon();
 
-    // 构建角色的碰撞盒
-    QRectF hitbox1(character->x() - 25, character->y() - 100, 50, 150);
-    QRectF hitbox2(character2->x() - 25, character2->y() - 100, 50, 150);
+    // 构建角色的碰撞盒，减小宽度以缩小判定范围
+    QRectF hitbox1(character->x() - 15, character->y() - 100, 30, 150);
+    QRectF hitbox2(character2->x() - 15, character2->y() - 100, 30, 150);
 
     // 检测角色1的攻击
     // 增加 !weapon1->hasDealtDamage 条件，确保本次攻击只造成一次伤害
