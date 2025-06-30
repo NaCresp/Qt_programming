@@ -12,6 +12,11 @@ public:
     explicit Weapon(QObject *parent, const QString &pixmapPath);
     virtual void attack() = 0;
 
+    // --- 新增代码 ---
+    // 用于标记单次攻击是否已造成伤害，防止重复扣血
+    bool hasDealtDamage{false};
+    // --- 新增代码结束 ---
+
 protected:
     QPropertyAnimation *animation;
 };

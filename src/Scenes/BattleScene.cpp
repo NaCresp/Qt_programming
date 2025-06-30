@@ -309,6 +309,7 @@ void BattleScene::update()
     processAttacks(); // 在每一帧都处理攻击检测
 }
 
+// --- 核心修改在这里 ---
 void BattleScene::processAttacks()
 {
     if (!character || !character2) return;
@@ -322,19 +323,24 @@ void BattleScene::processAttacks()
     QRectF hitbox2(character2->x() - 25, character2->y() - 100, 50, 150);
 
     // 检测角色1的攻击
-    if (weapon1 && weapon1->isVisible() && weapon1->sceneBoundingRect().intersects(hitbox2))
+    // 增加 !weapon1->hasDealtDamage 条件，确保本次攻击只造成一次伤害
+    if (weapon1 && weapon1->isVisible() && !weapon1->hasDealtDamage && weapon1->sceneBoundingRect().intersects(hitbox2))
     {
         character2->takeDamage(10); // 角色2受到伤害
-        weapon1->setVisible(false); // 让武器消失，避免一次攻击造成多次伤害
+        // 不再隐藏武器，而是将其标记为“已造成伤害”
+        weapon1->hasDealtDamage = true;
     }
 
     // 检测角色2的攻击
-    if (weapon2 && weapon2->isVisible() && weapon2->sceneBoundingRect().intersects(hitbox1))
+    // 增加 !weapon2->hasDealtDamage 条件
+    if (weapon2 && weapon2->isVisible() && !weapon2->hasDealtDamage && weapon2->sceneBoundingRect().intersects(hitbox1))
     {
         character->takeDamage(10); // 角色1受到伤害
-        weapon2->setVisible(false); // 让武器消失，避免一次攻击造成多次伤害
+        // 标记本次攻击已造成伤害
+        weapon2->hasDealtDamage = true;
     }
 }
+// --- 核心修改结束 ---
 
 void BattleScene::processMovement()
 {
@@ -401,17 +407,22 @@ void BattleScene::processMovement()
             currentChar->setPos(nextPos);
         }
 
-        // 隐藏区域逻辑
+        // 隐藏区域逻辑:
+        // 不直接隐藏角色本身(currentChar->setVisible(false))
+        // 而是遍历其子项，隐藏除武器外的所有部分
+        // 这样可以确保角色“隐身”，但武器在攻击时仍然可以正常显示和检测
         QRectF characterHitbox(currentChar->x() - 25, currentChar->y() - 100, 50, 150);
         bool isInHidingZone = hidingZone->rect().intersects(characterHitbox);
+        bool shouldBeHidden = currentChar->isSquatting() && isInHidingZone;
 
-        if (currentChar->isSquatting() && isInHidingZone)
-        {
-            currentChar->setVisible(false);
-        }
-        else
-        {
-            currentChar->setVisible(true);
+        Weapon* weapon = currentChar->getWeapon();
+        for (auto* childItem : currentChar->childItems()) {
+            // 不要隐藏武器，武器的可见性由其自身的攻击逻辑控制
+            if (childItem == weapon) {
+                continue;
+            }
+            // 隐藏或显示角色的其他部分
+            childItem->setVisible(!shouldBeHidden);
         }
     }
 }

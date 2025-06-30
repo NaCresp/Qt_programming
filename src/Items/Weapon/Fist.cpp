@@ -39,6 +39,11 @@ void Fist::attack()
     isAttacking = true;
     setVisible(true);
 
+    // --- 新增代码 ---
+    // 每次攻击开始时，重置伤害标记
+    hasDealtDamage = false;
+    // --- 新增代码结束 ---
+
     // 记录动画的起止位置
     animationStartPos = pos();
     animationEndPos = animationStartPos + QPointF(-50, 0);
