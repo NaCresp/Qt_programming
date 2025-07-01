@@ -13,7 +13,6 @@
 
 const qreal GRAVITY = 0.5; // 定义重力加速度
 
-// --- 新增代码：定义血条的尺寸 ---
 const qreal HP_BAR_WIDTH = 200.0;
 const qreal HP_BAR_HEIGHT = 20.0;
 
