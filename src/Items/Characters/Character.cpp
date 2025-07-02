@@ -35,6 +35,8 @@ Weapon* Character::pickupWeapon(Weapon* newWeapon)
     this->weapon->setParentItem(this); // 新武器的父项是角色
     this->weapon->mountToParent();     // 执行装备动作
 
+    this->weapon->hasDealtDamage = true;
+
     return oldWeapon; // 返回被替换掉的武器（如果是Fist则返回nullptr）
 }
 
