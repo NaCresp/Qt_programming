@@ -7,5 +7,5 @@ build/
 # 忽略 CMake 用户配置文件
 CMakeLists.txt.user
 
-
+.vscode
 
