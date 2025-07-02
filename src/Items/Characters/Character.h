@@ -13,6 +13,8 @@
 
 class Character : public Item
 {
+    Q_OBJECT // <--- 确保这里有 Q_OBJECT 宏
+
 public:
     explicit Character(QObject *parent);
 
@@ -42,11 +44,16 @@ public:
 
     Armor *pickupArmor(Armor *newArmor);
 
-    // --- 新增代码：血量系统 ---
+    // --- 修改/新增代码：血量系统 ---
     void takeDamage(int amount);
+    void heal(int amount); // 新增治疗方法
     [[nodiscard]] int getCurrentHp() const;
     [[nodiscard]] int getMaxHp() const;
     [[nodiscard]] Weapon* getWeapon() const; // 新增一个获取武器的公有方法，用于碰撞检测
+
+signals:
+    // 新增信号，当血量变化时发射。参数：变化的数值，发生的位置
+    void healthChanged(int amount, const QPointF &position);
 
 protected:
     HeadEquipment *headEquipment{};

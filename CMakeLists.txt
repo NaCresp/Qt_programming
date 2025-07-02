@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(qt_programming_2024)
+project(qt_programming)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
@@ -51,6 +51,8 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/Weapon/Weapon.cpp        #
         src/Items/Weapon/Fist.h            #
         src/Items/Weapon/Fist.cpp          #
+        src/Items/FloatingText.h           #
+        src/Items/FloatingText.cpp         #
         src/Items/Armors/FlamebreakerArmor.cpp
         src/Items/Armors/FlamebreakerArmor.h)
 target_link_libraries(qt_programming_2024
@@ -58,4 +60,3 @@ target_link_libraries(qt_programming_2024
         Qt::Gui
         Qt::Widgets
 )
-

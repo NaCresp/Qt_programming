@@ -226,6 +226,9 @@ bool Character::isPicking() const
 
 Armor *Character::pickupArmor(Armor *newArmor)
 {
+    // 为了演示回血效果，我们假设捡起任何装备都能回复25点血量
+    heal(25);
+
     auto oldArmor = armor;
     if (oldArmor != nullptr)
     {
@@ -239,7 +242,7 @@ Armor *Character::pickupArmor(Armor *newArmor)
     return oldArmor;
 }
 
-// --- 新增代码：血量系统 ---
+// --- 修改/新增代码：血量系统 ---
 void Character::takeDamage(int amount)
 {
     currentHp -= amount;
@@ -247,7 +250,21 @@ void Character::takeDamage(int amount)
     {
         currentHp = 0;
     }
+    // 发射信号，附带负值和当前角色在场景中的位置
+    emit healthChanged(-amount, scenePos());
 }
+
+void Character::heal(int amount)
+{
+    currentHp += amount;
+    if (currentHp > maxHp)
+    {
+        currentHp = maxHp;
+    }
+    // 发射信号，附带正值和当前角色在场景中的位置
+    emit healthChanged(amount, scenePos());
+}
+
 
 int Character::getCurrentHp() const
 {

@@ -1,116 +1,156 @@
-//
-// Created by gerw on 8/20/24.
-//
-
 #include <QDebug>
 #include <QKeyEvent>
 #include <QPen>
-#include <QFont> // 包含头文件
+#include <QFont>
 #include "BattleScene.h"
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
+#include "../Items/FloatingText.h" // 包含头文件
 
-const qreal GRAVITY = 0.5; // 定义重力加速度
-
+const qreal GRAVITY = 0.5;
 const qreal HP_BAR_WIDTH = 200.0;
 const qreal HP_BAR_HEIGHT = 20.0;
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
 {
-    // This is useful if you want the scene to have the exact same dimensions as the view
+    // ... 其他构造函数代码保持不变，直到 connect 语句 ...
+    
+    // 省略中间未变化的代码
     setSceneRect(0, 0, 1040, 656);
     map = new Battlefield();
     character = new Link();
     character2 = new Link(); // 创建第二个角色
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor(); // 为第二个角色创建备用护甲
-
     const qreal characterScale = 0.3; // 缩小值
     character->setScale(characterScale);
     character2->setScale(characterScale);
-
     addItem(map);
     addItem(character);
     addItem(character2); // 将第二个角色添加到场景
     addItem(spareArmor);
     addItem(spareArmor2); // 将第二个备用护甲添加到场景
-
     map->scaleToFitScene(this);
     character->setPos(map->getSpawnPos() - QPointF(100, 0));  // 调整第一个角色的出生点
     character2->setPos(map->getSpawnPos() + QPointF(100, 0)); // 设置第二个角色的出生点
-
     spareArmor->unmount();
     spareArmor->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.75, map->getFloorHeight());
     spareArmor2->unmount();
     spareArmor2->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.25, map->getFloorHeight());
-
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map)); // 顶部深色平台
     platforms.append(new QGraphicsRectItem(QRectF(192, 285, 240, 20), map)); // 左侧浅色平台
     platforms.append(new QGraphicsRectItem(QRectF(544, 300, 240, 20), map)); // 右侧木质平台
-
-    // 设置平台颜色
     platforms[0]->setBrush(Qt::darkGray);
     platforms[1]->setBrush(QColor(173, 216, 230)); // 浅蓝色
     platforms[2]->setBrush(QColor(139, 69, 19));   // 棕色
-
-    for (auto p : platforms)
-    {
-        p->setPen(Qt::NoPen); // 平台不需要边框
-    }
-
-    // 将 hidingZone 直接添加到场景，确保坐标系一致
+    for (auto p : platforms) { p->setPen(Qt::NoPen); }
     hidingZone = new QGraphicsRectItem(50, 380, 320, 20);
     hidingZone->setPen(Qt::NoPen);
     addItem(hidingZone);
-
-    // --- 新增代码：初始化血条UI ---
-    // 玩家1的血条
     player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpText = new QGraphicsTextItem();
-
-    // 玩家2的血条
     player2HpBarBg = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpBar = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpText = new QGraphicsTextItem();
-
-    // 设置颜色
     player1HpBarBg->setBrush(Qt::darkGray);
     player1HpBar->setBrush(Qt::red);
     player2HpBarBg->setBrush(Qt::darkGray);
     player2HpBar->setBrush(Qt::red);
-
-    // 设置字体和颜色
     QFont font("Arial", 12, QFont::Bold);
     player1HpText->setFont(font);
     player2HpText->setFont(font);
     player1HpText->setDefaultTextColor(Qt::white);
     player2HpText->setDefaultTextColor(Qt::white);
-
-    // 设置文字位置（在血条下方）
     player1HpText->setPos(20, 10 + HP_BAR_HEIGHT);
     player2HpText->setPos(width() - HP_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT);
-
-    // 设置Z值，确保前景在背景之上
     player1HpBarBg->setZValue(10);
     player1HpBar->setZValue(11);
     player1HpText->setZValue(12);
     player2HpBarBg->setZValue(10);
     player2HpBar->setZValue(11);
     player2HpText->setZValue(12);
-
-    // 添加到场景
     addItem(player1HpBarBg);
     addItem(player1HpBar);
     addItem(player1HpText);
     addItem(player2HpBarBg);
     addItem(player2HpBar);
     addItem(player2HpText);
+    updateHpDisplay(); 
+    // ... 省略结束 ...
 
-    updateHpDisplay(); // 初始化显示
+    connect(character, &Character::healthChanged, this, &BattleScene::showFloatingText);
+    connect(character2, &Character::healthChanged, this, &BattleScene::showFloatingText);
 }
 
+void BattleScene::showFloatingText(int amount, const QPointF &position)
+{
+    QString text;
+    QColor color;
+
+    if (amount < 0) {
+        text = QString::number(amount);
+        color = Qt::red;
+    } else {
+        text = "+" + QString::number(amount);
+        color = Qt::green;
+    }
+
+    auto floatingText = new FloatingText(text, color);
+    floatingText->setPos(position + QPointF(0, -100));
+    addItem(floatingText);
+
+    // 将新创建的浮动文字和当前时间戳一起添加到管理列表中
+    activeFloatingTexts.append({floatingText, QDateTime::currentMSecsSinceEpoch()});
+}
+
+void BattleScene::update()
+{
+    Scene::update();
+    updateHpDisplay();
+    processAttacks();
+    
+    // 在主循环中调用我们的新函数
+    updateFloatingTexts();
+}
+
+// --- 这是本次修改最核心的新函数 ---
+void BattleScene::updateFloatingTexts()
+{
+    const qint64 DURATION = 3000; // 持续时间 3 秒
+    const qreal  SPEED = 40.0;    // 向上移动速度（像素/秒）
+
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+
+    // 从后往前遍历列表，这样可以安全地在遍历过程中删除元素
+    for (int i = activeFloatingTexts.size() - 1; i >= 0; --i)
+    {
+        FloatingTextInfo &info = activeFloatingTexts[i];
+        qint64 age = currentTime - info.creationTime;
+
+        if (age >= DURATION)
+        {
+            // 如果寿命已到，从场景中移除并删除它，然后从管理列表中移除
+            removeItem(info.item);
+            delete info.item;
+            activeFloatingTexts.removeAt(i);
+        }
+        else
+        {
+            // 如果还在生命周期内，手动更新它的位置和透明度
+            qreal timeDelta = static_cast<qreal>(deltaTime) / 1000.0; // 转换为秒
+            info.item->moveBy(0, -SPEED * timeDelta);
+
+            // 透明度从1.0线性降低到0.0
+            qreal opacity = 1.0 - (static_cast<qreal>(age) / DURATION);
+            info.item->setOpacity(opacity);
+        }
+    }
+}
+
+// ... BattleScene.cpp 中其他所有函数（如 processInput, processMovement 等）保持不变 ...
+// 为了篇幅，这里省略了其他未修改的函数
 void BattleScene::updateHpDisplay()
 {
     if (!character || !character2) return;
@@ -132,8 +172,6 @@ void BattleScene::updateHpDisplay()
     player2HpBar->setRect(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH * p2_percent, HP_BAR_HEIGHT);
     player2HpText->setPlainText(QString("%1 / %2").arg(p2_hp).arg(p2_max_hp));
 }
-
-
 void BattleScene::processInput()
 {
     Scene::processInput();
@@ -229,7 +267,6 @@ void BattleScene::keyPressEvent(QKeyEvent *event)
         Scene::keyPressEvent(event);
     }
 }
-
 void BattleScene::keyReleaseEvent(QKeyEvent *event)
 {
     switch (event->key())
@@ -300,15 +337,6 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
         Scene::keyReleaseEvent(event);
     }
 }
-
-void BattleScene::update()
-{
-    Scene::update();
-    updateHpDisplay(); // 在每一帧都更新血量显示
-    processAttacks(); // 在每一帧都处理攻击检测
-}
-
-// --- 核心修改在这里 ---
 void BattleScene::processAttacks()
 {
     if (!character || !character2) return;
@@ -339,8 +367,6 @@ void BattleScene::processAttacks()
         weapon2->hasDealtDamage = true;
     }
 }
-// --- 核心修改结束 ---
-
 void BattleScene::processMovement()
 {
     Scene::processMovement();
@@ -425,8 +451,6 @@ void BattleScene::processMovement()
         }
     }
 }
-
-
 void BattleScene::processPicking()
 {
     Scene::processPicking();
