@@ -36,15 +36,20 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
 
 private:
-    // --- 新增代码：用于管理浮动文字 ---
-    // 定义一个结构体来保存浮动文字及其创建时间
+    // --- 新增代码：用于游戏结束逻辑 ---
+    bool gameOver;                          // 游戏结束标志
+    QGraphicsTextItem *gameOverText;        // 显示游戏结束信息的文本
+    void checkGameOver();                   // 检查游戏是否结束的函数
+    // --- 新增代码结束 ---
+
+    // --- 用于管理浮动文字 ---
     struct FloatingTextInfo {
         FloatingText *item;
         qint64 creationTime;
     };
-    QList<FloatingTextInfo> activeFloatingTexts; // 列表，用于存储所有活动的浮动文字
-    void updateFloatingTexts(); // 新增一个私有方法来更新它们的状态
-    // --- 新增代码结束 ---
+    QList<FloatingTextInfo> activeFloatingTexts;
+    void updateFloatingTexts();
+    // --- 管理结束 ---
 
     void updateHpDisplay();
     void processAttacks();
