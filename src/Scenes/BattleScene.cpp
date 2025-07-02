@@ -6,6 +6,7 @@
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
+#include "../Items/Weapon/Knife.h" // 包含小刀头文件
 #include "../Items/FloatingText.h"
 
 const qreal GRAVITY = 0.5;
@@ -22,21 +23,34 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     character2 = new Link();
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor();
+    spareWeapon = new Knife(); // 创建一把小刀
+
     const qreal characterScale = 0.3;
     character->setScale(characterScale);
     character2->setScale(characterScale);
+
     addItem(map);
     addItem(character);
     addItem(character2);
     addItem(spareArmor);
     addItem(spareArmor2);
+    addItem(spareWeapon); // 将小刀添加到场景
+
     map->scaleToFitScene(this);
     character->setPos(map->getSpawnPos() - QPointF(100, 0));
     character2->setPos(map->getSpawnPos() + QPointF(100, 0));
+    
     spareArmor->unmount();
     spareArmor->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.75, map->getFloorHeight());
     spareArmor2->unmount();
     spareArmor2->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.25, map->getFloorHeight());
+    
+    spareWeapon->unmount();
+    // 确保 Z-Value > 0，让它显示在地图之上
+    spareWeapon->setZValue(1); 
+    // 将小刀放在地图中央的地面上
+    spareWeapon->setPos(sceneRect().center().x(), map->getFloorHeight() - 20);
+
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(192, 285, 240, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(544, 300, 240, 20), map));
@@ -44,9 +58,11 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     platforms[1]->setBrush(QColor(173, 216, 230));
     platforms[2]->setBrush(QColor(139, 69, 19));
     for (auto p : platforms) { p->setPen(Qt::NoPen); }
+
     hidingZone = new QGraphicsRectItem(50, 380, 320, 20);
     hidingZone->setPen(Qt::NoPen);
     addItem(hidingZone);
+
     player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpText = new QGraphicsTextItem();
@@ -442,7 +458,7 @@ void BattleScene::processPicking()
         auto mountable = findNearestUnmountedMountable(character->pos(), 100.);
         if (mountable != nullptr)
         {
-            spareArmor = dynamic_cast<Armor *>(pickupMountable(character, mountable));
+            pickupMountable(character, mountable);
         }
     }
     if (character2->isPicking())
@@ -450,7 +466,7 @@ void BattleScene::processPicking()
         auto mountable = findNearestUnmountedMountable(character2->pos(), 100.);
         if (mountable != nullptr)
         {
-            spareArmor2 = dynamic_cast<Armor *>(pickupMountable(character2, mountable));
+            pickupMountable(character2, mountable);
         }
     }
 }
@@ -480,6 +496,11 @@ Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountab
     if (auto armor = dynamic_cast<Armor *>(mountable))
     {
         return character->pickupArmor(armor);
+    }
+    if (auto weapon = dynamic_cast<Weapon *>(mountable))
+    {
+        character->pickupWeapon(weapon);
+        return nullptr;
     }
     return nullptr;
 }

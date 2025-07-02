@@ -1,232 +1,46 @@
-//
-// Created by gerw on 8/20/24.
-//
-
 #include <QTransform>
 #include "Character.h"
 #include "../Weapon/Fist.h"
 
-const qreal JUMP_STRENGTH = -15.0; // 定义跳跃力度
-const qreal SQUAT_OFFSET_Y = 20.0; // 定义一个常量表示下蹲时的高度偏移
+const qreal JUMP_STRENGTH = -15.0;
+const qreal SQUAT_OFFSET_Y = 20.0;
 
 Character::Character(QObject *parent) : Item(parent, "")
 {
-    //    ellipseItem = new QGraphicsEllipseItem(-5, -5, 10, 10, this);
-    //    // Optionally, set some properties of the ellipse
-    //    ellipseItem->setBrush(Qt::green);          // Fill color
-    //    ellipseItem->setZValue(1);
     weapon = new Fist(this);
-
-    // --- 新增代码：初始化血量 ---
     maxHp = 100;
     currentHp = maxHp;
 }
 
-// ... (除了 squat 和 standUp 之外的其他函数保持不变) ...
-
-bool Character::isLeftDown() const
+Weapon* Character::pickupWeapon(Weapon* newWeapon)
 {
-    return leftDown;
-}
+    Weapon* oldWeapon = this->weapon;
 
-void Character::setLeftDown(bool leftDown)
-{
-    Character::leftDown = leftDown;
-}
-
-bool Character::isRightDown() const
-{
-    return rightDown;
-}
-
-void Character::setRightDown(bool rightDown)
-{
-    Character::rightDown = rightDown;
-}
-
-bool Character::isPickDown() const
-{
-    return pickDown;
-}
-
-bool Character::isAttackDown() const
-{
-    return attackDown;
-}
-
-void Character::setAttackDown(bool attackDown)
-{
-    Character::attackDown = attackDown;
-}
-
-void Character::setSquatDown(bool squatDown)
-{
-    this->squatDown = squatDown;
-}
-
-bool Character::isSquatting() const
-{
-    return isSquattingState;
-}
-
-// --- 核心修正在这里 ---
-void Character::squat()
-{
-    if (isSquattingState) return;
-    isSquattingState = true;
-
-    // 修正: 不再移动整个角色，只移动上半身组件
-    // moveBy(0, SQUAT_OFFSET_Y); // <-- 删除此行
-
-    // 将头部和盔甲相对于角色向下移动，实现“压缩”效果
-    if (headEquipment)
-    {
-        headEquipment->moveBy(0, SQUAT_OFFSET_Y);
-    }
-    if (armor)
-    {
-        armor->moveBy(0, SQUAT_OFFSET_Y);
+    // 1. 如果旧武器不是 Fist，说明它是之前捡来的，可以被丢弃
+    if (dynamic_cast<Fist*>(oldWeapon) == nullptr) {
+        oldWeapon->unmount();
+        // 将旧武器丢在新武器的位置上
+        oldWeapon->setPos(newWeapon->pos());
+        // 将旧武器的父项从角色(this)切换回场景(this->parentItem())，防止被错误删除
+        oldWeapon->setParentItem(this->parentItem());
+    } else {
+        // 2. 如果旧武器是 Fist，我们不丢弃它，只是让它不可见，为将来切换回来做准备
+        oldWeapon->setVisible(false);
+        // 返回值设为 nullptr，因为 Fist 不会真的“掉落”
+        oldWeapon = nullptr;
     }
 
-    // 切换腿部贴图
-    if (legEquipment)
-    {
-        legEquipment->setSquatMode(true);
-    }
+    // 3. 装备新武器
+    this->weapon = newWeapon;
+    this->weapon->setParentItem(this); // 新武器的父项是角色
+    this->weapon->mountToParent();     // 执行装备动作
+
+    return oldWeapon; // 返回被替换掉的武器（如果是Fist则返回nullptr）
 }
 
-void Character::standUp()
+
+Armor* Character::pickupArmor(Armor *newArmor)
 {
-    if (!isSquattingState) return;
-    isSquattingState = false;
-
-    // 修正: 不再移动整个角色，只移动上半身组件
-    // moveBy(0, -SQUAT_OFFSET_Y); // <-- 删除此行
-
-    // 将头部和盔甲也移回它们在角色身上的原始相对位置
-    if (headEquipment)
-    {
-        headEquipment->moveBy(0, -SQUAT_OFFSET_Y);
-    }
-    if (armor)
-    {
-        armor->moveBy(0, -SQUAT_OFFSET_Y);
-    }
-
-    // 恢复腿部贴图
-    if (legEquipment)
-    {
-        legEquipment->setSquatMode(false);
-    }
-}
-// --- 核心修改结束 ---
-
-void Character::attack()
-{
-    if (weapon)
-    {
-        weapon->attack();
-    }
-}
-
-void Character::setPickDown(bool pickDown)
-{
-    Character::pickDown = pickDown;
-}
-
-const QPointF &Character::getVelocity() const
-{
-    return velocity;
-}
-
-void Character::setVelocity(const QPointF &velocity)
-{
-    Character::velocity = velocity;
-}
-
-void Character::processInput()
-{
-    // 处理下蹲状态切换
-    if (squatDown)
-    {
-        squat();
-    }
-    else
-    {
-        standUp();
-    }
-
-    auto currentVelocity = velocity; // 获取当前速度
-    currentVelocity.setX(0);         // 重置水平速度
-    const auto moveSpeed = 4.5;
-
-    // 如果不在下蹲，才允许左右移动
-    if (!isSquattingState)
-    {
-        if (isLeftDown())
-        {
-            currentVelocity.setX(currentVelocity.x() - moveSpeed);
-            setTransform(QTransform().scale(1, 1));
-        }
-        if (isRightDown())
-        {
-            currentVelocity.setX(currentVelocity.x() + moveSpeed);
-            setTransform(QTransform().scale(-1, 1));
-        }
-    }
-
-    setVelocity(currentVelocity); // 设置新的速度
-
-    if (!lastPickDown && pickDown)
-    { // first time pickDown
-        picking = true;
-    }
-    else
-    {
-        picking = false;
-    }
-    lastPickDown = pickDown;
-
-    if (!lastAttackDown && attackDown)
-    { // 第一次按下攻擊鍵
-        attack();
-    }
-    lastAttackDown = attackDown;
-}
-
-void Character::jump()
-{
-    // 下蹲时不允许跳跃
-    if (onGround && !isSquattingState)
-    {
-        velocity.setY(JUMP_STRENGTH);
-        onGround = false;
-    }
-}
-
-void Character::applyGravity(qreal gravity)
-{
-    velocity.setY(velocity.y() + gravity);
-}
-
-void Character::setOnGround(bool onGround)
-{
-    this->onGround = onGround;
-}
-
-bool Character::isOnGround() const
-{
-    return onGround;
-}
-
-bool Character::isPicking() const
-{
-    return picking;
-}
-
-Armor *Character::pickupArmor(Armor *newArmor)
-{
-    // 为了演示回血效果，我们假设捡起任何装备都能回复25点血量
     heal(25);
 
     auto oldArmor = armor;
@@ -242,41 +56,107 @@ Armor *Character::pickupArmor(Armor *newArmor)
     return oldArmor;
 }
 
-// --- 修改/新增代码：血量系统 ---
+bool Character::isLeftDown() const { return leftDown; }
+void Character::setLeftDown(bool leftDown) { Character::leftDown = leftDown; }
+bool Character::isRightDown() const { return rightDown; }
+void Character::setRightDown(bool rightDown) { Character::rightDown = rightDown; }
+bool Character::isPickDown() const { return pickDown; }
+bool Character::isAttackDown() const { return attackDown; }
+void Character::setAttackDown(bool attackDown) { Character::attackDown = attackDown; }
+void Character::setSquatDown(bool squatDown) { this->squatDown = squatDown; }
+bool Character::isSquatting() const { return isSquattingState; }
+
+void Character::squat()
+{
+    if (isSquattingState) return;
+    isSquattingState = true;
+    if (headEquipment) { headEquipment->moveBy(0, SQUAT_OFFSET_Y); }
+    if (armor) { armor->moveBy(0, SQUAT_OFFSET_Y); }
+    if (legEquipment) { legEquipment->setSquatMode(true); }
+}
+
+void Character::standUp()
+{
+    if (!isSquattingState) return;
+    isSquattingState = false;
+    if (headEquipment) { headEquipment->moveBy(0, -SQUAT_OFFSET_Y); }
+    if (armor) { armor->moveBy(0, -SQUAT_OFFSET_Y); }
+    if (legEquipment) { legEquipment->setSquatMode(false); }
+}
+
+void Character::attack()
+{
+    if (weapon)
+    {
+        weapon->attack();
+    }
+}
+
+void Character::setPickDown(bool pickDown) { Character::pickDown = pickDown; }
+const QPointF &Character::getVelocity() const { return velocity; }
+void Character::setVelocity(const QPointF &velocity) { Character::velocity = velocity; }
+
+void Character::processInput()
+{
+    if (squatDown) { squat(); }
+    else { standUp(); }
+
+    auto currentVelocity = velocity;
+    currentVelocity.setX(0);
+    const auto moveSpeed = 4.5;
+
+    if (!isSquattingState)
+    {
+        if (isLeftDown())
+        {
+            currentVelocity.setX(currentVelocity.x() - moveSpeed);
+            setTransform(QTransform().scale(1, 1));
+        }
+        if (isRightDown())
+        {
+            currentVelocity.setX(currentVelocity.x() + moveSpeed);
+            setTransform(QTransform().scale(-1, 1));
+        }
+    }
+
+    setVelocity(currentVelocity);
+
+    if (!lastPickDown && pickDown) { picking = true; }
+    else { picking = false; }
+    lastPickDown = pickDown;
+
+    if (!lastAttackDown && attackDown) { attack(); }
+    lastAttackDown = attackDown;
+}
+
+void Character::jump()
+{
+    if (onGround && !isSquattingState)
+    {
+        velocity.setY(JUMP_STRENGTH);
+        onGround = false;
+    }
+}
+
+void Character::applyGravity(qreal gravity) { velocity.setY(velocity.y() + gravity); }
+void Character::setOnGround(bool onGround) { this->onGround = onGround; }
+bool Character::isOnGround() const { return onGround; }
+bool Character::isPicking() const { return picking; }
+
 void Character::takeDamage(int amount)
 {
     currentHp -= amount;
-    if (currentHp < 0)
-    {
-        currentHp = 0;
-    }
-    // 发射信号，附带负值和当前角色在场景中的位置
+    if (currentHp < 0) { currentHp = 0; }
     emit healthChanged(-amount, scenePos());
 }
 
 void Character::heal(int amount)
 {
     currentHp += amount;
-    if (currentHp > maxHp)
-    {
-        currentHp = maxHp;
-    }
-    // 发射信号，附带正值和当前角色在场景中的位置
+    if (currentHp > maxHp) { currentHp = maxHp; }
     emit healthChanged(amount, scenePos());
 }
 
-
-int Character::getCurrentHp() const
-{
-    return currentHp;
-}
-
-int Character::getMaxHp() const
-{
-    return maxHp;
-}
-
-Weapon *Character::getWeapon() const
-{
-    return weapon;
-}
+int Character::getCurrentHp() const { return currentHp; }
+int Character::getMaxHp() const { return maxHp; }
+Weapon *Character::getWeapon() const { return weapon; }

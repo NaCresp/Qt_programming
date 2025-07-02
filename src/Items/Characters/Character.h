@@ -42,14 +42,15 @@ public:
     void setOnGround(bool onGround);
     [[nodiscard]] bool isOnGround() const;
 
-    Armor *pickupArmor(Armor *newArmor);
-
     // --- 修改/新增代码：血量系统 ---
     void takeDamage(int amount);
     void heal(int amount); // 新增治疗方法
     [[nodiscard]] int getCurrentHp() const;
     [[nodiscard]] int getMaxHp() const;
     [[nodiscard]] Weapon* getWeapon() const; // 新增一个获取武器的公有方法，用于碰撞检测
+
+    Armor *pickupArmor(Armor *newArmor);
+    Weapon *pickupWeapon(Weapon *newWeapon); // <-- 新增武器拾取函数
 
 signals:
     // 新增信号，当血量变化时发射。参数：变化的数值，发生的位置

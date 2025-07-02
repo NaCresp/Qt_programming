@@ -70,6 +70,8 @@ private:
     QGraphicsRectItem *player2HpBarBg;
     QGraphicsRectItem *player2HpBar;
     QGraphicsTextItem *player2HpText;
+
+    Weapon *spareWeapon;
 };
 
 #endif // QT_PROGRAMMING_2024_BATTLESCENE_H
