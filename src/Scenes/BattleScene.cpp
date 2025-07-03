@@ -2,11 +2,12 @@
 #include <QKeyEvent>
 #include <QPen>
 #include <QFont>
+#include <QBrush>
 #include "BattleScene.h"
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
-#include "../Items/Weapon/Knife.h" // 包含小刀头文件
+#include "../Items/Weapon/Knife.h"
 #include "../Items/FloatingText.h"
 
 const qreal GRAVITY = 0.5;
@@ -16,14 +17,16 @@ const qreal HP_BAR_HEIGHT = 20.0;
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
 {
     gameOver = false;
-    
+
     setSceneRect(0, 0, 1040, 656);
     map = new Battlefield();
     character = new Link();
     character2 = new Link();
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor();
-    spareWeapon = new Knife(); // 创建一把小刀
+    spareWeapon = new Knife();
+
+    map->setZValue(-10);
 
     const qreal characterScale = 0.3;
     character->setScale(characterScale);
@@ -34,21 +37,19 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(character2);
     addItem(spareArmor);
     addItem(spareArmor2);
-    addItem(spareWeapon); // 将小刀添加到场景
+    addItem(spareWeapon);
 
     map->scaleToFitScene(this);
     character->setPos(map->getSpawnPos() - QPointF(100, 0));
     character2->setPos(map->getSpawnPos() + QPointF(100, 0));
-    
+
     spareArmor->unmount();
     spareArmor->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.75, map->getFloorHeight());
     spareArmor2->unmount();
     spareArmor2->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.25, map->getFloorHeight());
-    
+
     spareWeapon->unmount();
-    // 确保 Z-Value > 0，让它显示在地图之上
-    spareWeapon->setZValue(1); 
-    // 将小刀放在地图中央的地面上
+    spareWeapon->setZValue(1);
     spareWeapon->setPos(sceneRect().center().x(), map->getFloorHeight() - 20);
 
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map));
@@ -62,6 +63,15 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     hidingZone = new QGraphicsRectItem(50, 380, 320, 20);
     hidingZone->setPen(Qt::NoPen);
     addItem(hidingZone);
+
+    speedBuffZone = new QGraphicsRectItem(380, 410, 430, 5);
+    // 用于调试区域
+    // QColor buffColor(0, 0, 255, 80);
+    // speedBuffZone->setBrush(QBrush(buffColor));
+
+    speedBuffZone->setPen(Qt::NoPen);
+    speedBuffZone->setZValue(-5);
+    addItem(speedBuffZone);
 
     player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
@@ -92,7 +102,7 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(player2HpBarBg);
     addItem(player2HpBar);
     addItem(player2HpText);
-    updateHpDisplay(); 
+    updateHpDisplay();
 
     gameOverText = new QGraphicsTextItem();
     gameOverText->setFont(QFont("Arial", 50, QFont::Bold));
@@ -110,14 +120,36 @@ void BattleScene::update()
     if (gameOver) {
         return;
     }
-    
+
     Scene::update();
     updateHpDisplay();
     processAttacks();
     updateFloatingTexts();
-    
+    checkBuffs();
+
     checkGameOver();
 }
+
+void BattleScene::checkBuffs()
+{
+    for (auto* p : {character, character2})
+    {
+        if (!p) continue;
+
+        if (speedBuffZone->collidesWithItem(p))
+        {
+            p->applySpeedBuff();
+        }
+        else
+        {
+            if (p->hasSpeedBuff())
+            {
+                p->removeSpeedBuff();
+            }
+        }
+    }
+}
+
 
 void BattleScene::checkGameOver() {
     if (gameOver || !character || !character2) {
@@ -126,7 +158,7 @@ void BattleScene::checkGameOver() {
 
     QString winnerText;
     bool isGameOverNow = false;
-    
+
     if (character->getCurrentHp() <= 0) {
         winnerText = "Player 2 Wins!";
         isGameOverNow = true;
@@ -140,7 +172,7 @@ void BattleScene::checkGameOver() {
 
         gameOver = true;
         gameOverText->setPlainText(winnerText);
-        
+
         QRectF textRect = gameOverText->boundingRect();
         gameOverText->setPos((width() - textRect.width()) / 2, (height() - textRect.height()) / 2);
         gameOverText->setVisible(true);
@@ -441,13 +473,20 @@ void BattleScene::processMovement()
         QRectF characterHitbox(currentChar->x() - 25, currentChar->y() - 100, 50, 150);
         bool isInHidingZone = hidingZone->rect().intersects(characterHitbox);
         bool shouldBeHidden = currentChar->isSquatting() && isInHidingZone;
+        
+        // --- 核心修正：在循环中跳过对Buff图标的显隐控制 ---
         Weapon* weapon = currentChar->getWeapon();
+        Speed* buffIcon = currentChar->getSpeedBuffIcon(); // 获取Buff图标
+
         for (auto* childItem : currentChar->childItems()) {
-            if (childItem == weapon) {
+            // 如果是武器或者Buff图标，就跳过，不控制它的显隐
+            if (childItem == weapon || childItem == buffIcon) {
                 continue;
             }
+            // 只控制装备的显隐
             childItem->setVisible(!shouldBeHidden);
         }
+        // --- 修正结束 ---
     }
 }
 void BattleScene::processPicking()

@@ -51,6 +51,11 @@ private:
     void updateFloatingTexts();
     // --- 管理结束 ---
 
+    // --- 新增代码: Buff 区域 ---
+    QGraphicsRectItem *speedBuffZone;
+    void checkBuffs();
+    // --- 新增代码结束 ---
+
     void updateHpDisplay();
     void processAttacks();
     Mountable *findNearestUnmountedMountable(const QPointF &pos, qreal distance_threshold = std::numeric_limits<qreal>::max());

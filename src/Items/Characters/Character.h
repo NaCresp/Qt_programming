@@ -10,13 +10,16 @@
 #include "../Armors/Armor.h"
 #include "../LegEquipments/LegEquipment.h"
 #include "../Weapon/Weapon.h"
+#include "../Buff/Speed.h"
 
 class Character : public Item
 {
-    Q_OBJECT // <--- 确保这里有 Q_OBJECT 宏
+    Q_OBJECT
 
 public:
     explicit Character(QObject *parent);
+
+    QRectF boundingRect() const override;
 
     [[nodiscard]] bool isLeftDown() const;
     void setLeftDown(bool leftDown);
@@ -37,23 +40,29 @@ public:
 
     void processInput();
     void jump();
-    void applyGravity(qreal gravity); // 简化：只应用重力，不检测碰撞
+    void applyGravity(qreal gravity);
 
     void setOnGround(bool onGround);
     [[nodiscard]] bool isOnGround() const;
 
-    // --- 修改/新增代码：血量系统 ---
     void takeDamage(int amount);
-    void heal(int amount); // 新增治疗方法
+    void heal(int amount);
     [[nodiscard]] int getCurrentHp() const;
     [[nodiscard]] int getMaxHp() const;
-    [[nodiscard]] Weapon* getWeapon() const; // 新增一个获取武器的公有方法，用于碰撞检测
+    [[nodiscard]] Weapon* getWeapon() const;
+
+    // --- 新增代码：添加Buff图标的getter ---
+    [[nodiscard]] Speed* getSpeedBuffIcon() const;
+    // --- 新增代码结束 ---
 
     Armor *pickupArmor(Armor *newArmor);
-    Weapon *pickupWeapon(Weapon *newWeapon); // <-- 新增武器拾取函数
+    Weapon *pickupWeapon(Weapon *newWeapon);
+
+    void applySpeedBuff();
+    void removeSpeedBuff();
+    [[nodiscard]] bool hasSpeedBuff() const;
 
 signals:
-    // 新增信号，当血量变化时发射。参数：变化的数值，发生的位置
     void healthChanged(int amount, const QPointF &position);
 
 protected:
@@ -61,8 +70,9 @@ protected:
     LegEquipment *legEquipment{};
     Armor *armor{};
     Weapon *weapon{};
+    Speed *speedBuffIcon{};
     QPointF velocity{};
-    //    QGraphicsEllipseItem *ellipseItem; // for debugging
+
 private:
     bool leftDown{}, rightDown{}, pickDown{};
     bool lastPickDown{};
@@ -74,13 +84,15 @@ private:
     bool attacking{};
 
     bool squatDown{};
-    bool isSquattingState{}; // 使用新名称以避免与函数名冲突
+    bool isSquattingState{};
     void squat();
     void standUp();
 
-    // --- 新增代码：血量系统 ---
     int maxHp;
     int currentHp;
+
+    bool isSpeedBuffed{false};
+    qreal speedMultiplier{1.0};
 };
 
 #endif // QT_PROGRAMMING_2024_CHARACTER_H

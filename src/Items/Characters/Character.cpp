@@ -5,41 +5,46 @@
 const qreal JUMP_STRENGTH = -15.0;
 const qreal SQUAT_OFFSET_Y = 20.0;
 
+QRectF Character::boundingRect() const
+{
+    return QRectF(-50, -180, 100, 180);
+}
+
 Character::Character(QObject *parent) : Item(parent, "")
 {
     weapon = new Fist(this);
     maxHp = 100;
     currentHp = maxHp;
+    speedBuffIcon = nullptr;
 }
+
+// --- 新增代码：实现getter ---
+Speed* Character::getSpeedBuffIcon() const
+{
+    return speedBuffIcon;
+}
+// --- 新增代码结束 ---
 
 Weapon* Character::pickupWeapon(Weapon* newWeapon)
 {
     Weapon* oldWeapon = this->weapon;
 
-    // 1. 如果旧武器不是 Fist，说明它是之前捡来的，可以被丢弃
     if (dynamic_cast<Fist*>(oldWeapon) == nullptr) {
         oldWeapon->unmount();
-        // 将旧武器丢在新武器的位置上
         oldWeapon->setPos(newWeapon->pos());
-        // 将旧武器的父项从角色(this)切换回场景(this->parentItem())，防止被错误删除
         oldWeapon->setParentItem(this->parentItem());
     } else {
-        // 2. 如果旧武器是 Fist，我们不丢弃它，只是让它不可见，为将来切换回来做准备
         oldWeapon->setVisible(false);
-        // 返回值设为 nullptr，因为 Fist 不会真的“掉落”
         oldWeapon = nullptr;
     }
 
-    // 3. 装备新武器
     this->weapon = newWeapon;
-    this->weapon->setParentItem(this); // 新武器的父项是角色
-    this->weapon->mountToParent();     // 执行装备动作
-
+    this->weapon->setParentItem(this);
+    this->weapon->mountToParent();
     this->weapon->hasDealtDamage = true;
 
-    return oldWeapon; // 返回被替换掉的武器（如果是Fist则返回nullptr）
+    return oldWeapon;
 }
-
 
 Armor* Character::pickupArmor(Armor *newArmor)
 {
@@ -56,6 +61,42 @@ Armor* Character::pickupArmor(Armor *newArmor)
     newArmor->mountToParent();
     armor = newArmor;
     return oldArmor;
+}
+
+void Character::applySpeedBuff()
+{
+    if (!isSpeedBuffed)
+    {
+        isSpeedBuffed = true;
+        speedMultiplier = 1.8;
+
+        if (!speedBuffIcon)
+        {
+            speedBuffIcon = new Speed(this);
+            speedBuffIcon->mountToParent();
+        }
+        speedBuffIcon->setVisible(true);
+    }
+}
+
+void Character::removeSpeedBuff()
+{
+    if (isSpeedBuffed)
+    {
+        isSpeedBuffed = false;
+        speedMultiplier = 1.0;
+
+        if (speedBuffIcon)
+        {
+            speedBuffIcon->setVisible(false);
+        }
+    }
+}
+
+
+bool Character::hasSpeedBuff() const
+{
+    return isSpeedBuffed;
 }
 
 bool Character::isLeftDown() const { return leftDown; }
@@ -105,7 +146,7 @@ void Character::processInput()
 
     auto currentVelocity = velocity;
     currentVelocity.setX(0);
-    const auto moveSpeed = 4.5;
+    const auto moveSpeed = 4.5 * speedMultiplier;
 
     if (!isSquattingState)
     {

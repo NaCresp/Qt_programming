@@ -8,5 +8,6 @@
         <file>Items/Maps/Battlefield/g9tOqth.png</file>
         <file>Items/Weapon/Fist/fist.png</file>
         <file>Items/Weapon/Knife/knife.png</file>
+        <file>Items/Buff/Speed/speed.png</file>
     </qresource>
 </RCC>
