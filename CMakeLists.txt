@@ -51,7 +51,7 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/Weapon/Weapon.cpp        #
         src/Items/Weapon/Fist.h            #
         src/Items/Weapon/Fist.cpp          #
-        src/Items/FloatingText.h           #
+        src/Items/FloatingText.h
         src/Items/FloatingText.cpp         #
         src/Items/Armors/FlamebreakerArmor.cpp
         src/Items/Armors/FlamebreakerArmor.h
@@ -60,6 +60,17 @@ add_executable(qt_programming_2024 src/main.cpp
         # --- 新增Buff文件 ---
         src/Items/Buff/Speed.cpp
         src/Items/Buff/Speed.h
+        src/Items/Buff/Health.cpp
+        src/Items/Buff/Health.h
+        # --- 新增医疗品文件 ---
+        src/Items/Medicine/Medicine.cpp
+        src/Items/Medicine/Medicine.h
+        src/Items/Medicine/Bandage.cpp
+        src/Items/Medicine/Bandage.h
+        src/Items/Medicine/Kit.cpp
+        src/Items/Medicine/Kit.h
+        src/Items/Medicine/Adrenaline.cpp
+        src/Items/Medicine/Adrenaline.h
 )
 target_link_libraries(qt_programming_2024
         Qt::Core

@@ -10,6 +10,9 @@
 #include "Scene.h"
 #include "../Items/Maps/Map.h"
 #include "../Items/Characters/Character.h"
+#include "../Items/Medicine/Bandage.h" // 新增
+#include "../Items/Medicine/Kit.h"     // 新增
+#include "../Items/Medicine/Adrenaline.h" // 新增
 #include <QGraphicsRectItem>
 #include <QDateTime> // <-- 包含 QDateTime
 
@@ -66,6 +69,11 @@ private:
     Character *character2;
     Armor *spareArmor;
     Armor *spareArmor2;
+    // --- 新增医疗物品 ---
+    Bandage *bandage;
+    Kit *kit;
+    Adrenaline *adrenaline;
+    // --- 新增结束 ---
     QList<QGraphicsRectItem *> platforms;
     QGraphicsRectItem *hidingZone;
 

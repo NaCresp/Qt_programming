@@ -9,5 +9,9 @@
         <file>Items/Weapon/Fist/fist.png</file>
         <file>Items/Weapon/Knife/knife.png</file>
         <file>Items/Buff/Speed/speed.png</file>
+        <file>Items\Medicine\Belt\belt.png</file>
+        <file>Items\Medicine\Kit\kit.png</file>
+        <file>Items\Medicine\Adrenaline\adrenaline.png</file>
+        <file>Items\Buff\Health\health.png</file>
     </qresource>
 </RCC>

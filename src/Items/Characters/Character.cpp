@@ -16,12 +16,22 @@ Character::Character(QObject *parent) : Item(parent, "")
     maxHp = 100;
     currentHp = maxHp;
     speedBuffIcon = nullptr;
+    healthBuffIcon = nullptr; // 新增
+
+    // --- 新增肾上腺素相关 ---
+    adrenalineTimer = new QTimer(this);
+    connect(adrenalineTimer, &QTimer::timeout, this, &Character::handleAdrenalineTick);
+    // --- 新增结束 ---
 }
 
 // --- 新增代码：实现getter ---
 Speed* Character::getSpeedBuffIcon() const
 {
     return speedBuffIcon;
+}
+Health* Character::getHealthBuffIcon() const // 新增
+{
+    return healthBuffIcon;
 }
 // --- 新增代码结束 ---
 
@@ -93,6 +103,39 @@ void Character::removeSpeedBuff()
     }
 }
 
+// --- 新增肾上腺素逻辑 ---
+void Character::applyAdrenalineBuff()
+{
+    // 立即并持续增加移速
+    applySpeedBuff();
+
+    // 显示持续回血图标并开始回血
+    if (!healthBuffIcon) {
+        healthBuffIcon = new Health(this);
+        healthBuffIcon->mountToParent();
+    }
+    healthBuffIcon->setVisible(true);
+
+    adrenalineTicks = 5; // 效果持续5秒
+    if (!adrenalineTimer->isActive()) {
+        adrenalineTimer->start(1000); // 每秒触发一次
+    }
+    handleAdrenalineTick(); // 立即回一次血
+}
+
+void Character::handleAdrenalineTick()
+{
+    if (adrenalineTicks <= 0) {
+        adrenalineTimer->stop();
+        if (healthBuffIcon) healthBuffIcon->setVisible(false);
+        // 肾上腺素效果结束，移速恢复正常
+        removeSpeedBuff();
+        return;
+    }
+    heal(10);
+    adrenalineTicks--;
+}
+// --- 新增结束 ---
 
 bool Character::hasSpeedBuff() const
 {

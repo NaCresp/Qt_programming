@@ -7,6 +7,7 @@
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
+#include "../Items/Medicine/Medicine.h"
 #include "../Items/Weapon/Knife.h"
 #include "../Items/FloatingText.h"
 
@@ -25,6 +26,9 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor();
     spareWeapon = new Knife();
+    bandage = new Bandage();
+    kit = new Kit();
+    adrenaline = new Adrenaline();
 
     map->setZValue(-10);
 
@@ -38,6 +42,9 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(spareArmor);
     addItem(spareArmor2);
     addItem(spareWeapon);
+    addItem(bandage);
+    addItem(kit);
+    addItem(adrenaline);
 
     map->scaleToFitScene(this);
     character->setPos(map->getSpawnPos() - QPointF(100, 0));
@@ -51,6 +58,14 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     spareWeapon->unmount();
     spareWeapon->setZValue(1);
     spareWeapon->setPos(sceneRect().center().x(), map->getFloorHeight() - 20);
+
+    bandage->unmount();
+    bandage->setPos(sceneRect().center().x() - 100, map->getFloorHeight() - 20);
+    kit->unmount();
+    kit->setPos(sceneRect().center().x() + 100, map->getFloorHeight() - 20);
+    adrenaline->unmount();
+    adrenaline->setPos(sceneRect().center().x() + 200, map->getFloorHeight() - 20);
+
 
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(192, 285, 240, 20), map));
@@ -144,7 +159,13 @@ void BattleScene::checkBuffs()
         {
             if (p->hasSpeedBuff())
             {
-                p->removeSpeedBuff();
+                Health* healthIcon = p->getHealthBuffIcon();
+                bool hasAdrenalineEffect = (healthIcon != nullptr) && healthIcon->isVisible();
+
+                if (!hasAdrenalineEffect)
+                {
+                    p->removeSpeedBuff();
+                }
             }
         }
     }
@@ -474,19 +495,16 @@ void BattleScene::processMovement()
         bool isInHidingZone = hidingZone->rect().intersects(characterHitbox);
         bool shouldBeHidden = currentChar->isSquatting() && isInHidingZone;
         
-        // --- 核心修正：在循环中跳过对Buff图标的显隐控制 ---
         Weapon* weapon = currentChar->getWeapon();
-        Speed* buffIcon = currentChar->getSpeedBuffIcon(); // 获取Buff图标
+        Speed* buffIcon = currentChar->getSpeedBuffIcon(); 
+        Health* healthIcon = currentChar->getHealthBuffIcon(); 
 
         for (auto* childItem : currentChar->childItems()) {
-            // 如果是武器或者Buff图标，就跳过，不控制它的显隐
-            if (childItem == weapon || childItem == buffIcon) {
+            if (childItem == weapon || childItem == buffIcon || childItem == healthIcon) { 
                 continue;
             }
-            // 只控制装备的显隐
             childItem->setVisible(!shouldBeHidden);
         }
-        // --- 修正结束 ---
     }
 }
 void BattleScene::processPicking()
@@ -530,6 +548,8 @@ Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal 
     }
     return nearest;
 }
+
+// --- ** LOGIC CHANGE STARTS HERE ** ---
 Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable)
 {
     if (auto armor = dynamic_cast<Armor *>(mountable))
@@ -541,5 +561,15 @@ Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountab
         character->pickupWeapon(weapon);
         return nullptr;
     }
+    if (auto medicine = dynamic_cast<Medicine *>(mountable))
+    {
+        // 先应用效果
+        medicine->applyEffect(character);
+        // 然后安排删除该对象，它会自动从场景中移除
+        medicine->deleteLater();
+        // 因为物品被消耗了，所以返回nullptr
+        return nullptr;
+    }
     return nullptr;
 }
+// --- ** LOGIC CHANGE ENDS HERE ** ---

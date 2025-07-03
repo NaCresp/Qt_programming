@@ -11,6 +11,7 @@
 #include "../LegEquipments/LegEquipment.h"
 #include "../Weapon/Weapon.h"
 #include "../Buff/Speed.h"
+#include "../Buff/Health.h" // 新增
 
 class Character : public Item
 {
@@ -53,6 +54,7 @@ public:
 
     // --- 新增代码：添加Buff图标的getter ---
     [[nodiscard]] Speed* getSpeedBuffIcon() const;
+    [[nodiscard]] Health* getHealthBuffIcon() const; // 新增
     // --- 新增代码结束 ---
 
     Armor *pickupArmor(Armor *newArmor);
@@ -61,6 +63,8 @@ public:
     void applySpeedBuff();
     void removeSpeedBuff();
     [[nodiscard]] bool hasSpeedBuff() const;
+
+    void applyAdrenalineBuff(); // 新增
 
 signals:
     void healthChanged(int amount, const QPointF &position);
@@ -71,6 +75,7 @@ protected:
     Armor *armor{};
     Weapon *weapon{};
     Speed *speedBuffIcon{};
+    Health *healthBuffIcon{}; // 新增
     QPointF velocity{};
 
 private:
@@ -93,6 +98,12 @@ private:
 
     bool isSpeedBuffed{false};
     qreal speedMultiplier{1.0};
+
+    // --- 新增肾上腺素相关 ---
+    QTimer *adrenalineTimer{};
+    int adrenalineTicks{0};
+    void handleAdrenalineTick();
+    // --- 新增结束 ---
 };
 
 #endif // QT_PROGRAMMING_2024_CHARACTER_H
