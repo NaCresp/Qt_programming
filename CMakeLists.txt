@@ -71,6 +71,14 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/Medicine/Kit.h
         src/Items/Medicine/Adrenaline.cpp
         src/Items/Medicine/Adrenaline.h
+        src/Items/Weapon/RangedWeapon.cpp
+        src/Items/Weapon/RangedWeapon.h
+        src/Items/Weapon/Sniper.cpp
+        src/Items/Weapon/Sniper.h
+        src/Items/Weapon/Rifle.cpp
+        src/Items/Weapon/Rifle.h
+        src/Items/Weapon/Bullet.cpp
+        src/Items/Weapon/Bullet.h
 )
 target_link_libraries(qt_programming_2024
         Qt::Core

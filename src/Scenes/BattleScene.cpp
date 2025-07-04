@@ -4,12 +4,16 @@
 #include <QFont>
 #include <QBrush>
 #include "BattleScene.h"
+#include "../Items/Weapon/Fist.h"
 #include "../Items/Characters/Link.h"
 #include "../Items/Maps/Battlefield.h"
 #include "../Items/Armors/FlamebreakerArmor.h"
 #include "../Items/Medicine/Medicine.h"
 #include "../Items/Weapon/Knife.h"
 #include "../Items/FloatingText.h"
+#include "../Items/Weapon/Sniper.h"
+#include "../Items/Weapon/Rifle.h"
+#include "../Items/Weapon/Bullet.h"
 
 const qreal GRAVITY = 0.5;
 const qreal HP_BAR_WIDTH = 200.0;
@@ -26,6 +30,8 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     spareArmor = new FlamebreakerArmor();
     spareArmor2 = new FlamebreakerArmor();
     spareWeapon = new Knife();
+    sniper = new Sniper();
+    rifle = new Rifle();
     bandage = new Bandage();
     kit = new Kit();
     adrenaline = new Adrenaline();
@@ -42,6 +48,8 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(spareArmor);
     addItem(spareArmor2);
     addItem(spareWeapon);
+    addItem(sniper);
+    addItem(rifle);
     addItem(bandage);
     addItem(kit);
     addItem(adrenaline);
@@ -58,6 +66,12 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     spareWeapon->unmount();
     spareWeapon->setZValue(1);
     spareWeapon->setPos(sceneRect().center().x(), map->getFloorHeight() - 20);
+
+    sniper->unmount();
+    sniper->setPos(sceneRect().center().x() - 150, map->getFloorHeight() - 20);
+
+    rifle->unmount();
+    rifle->setPos(sceneRect().center().x() + 150, map->getFloorHeight() - 20);
 
     bandage->unmount();
     bandage->setPos(sceneRect().center().x() - 100, map->getFloorHeight() - 20);
@@ -141,6 +155,7 @@ void BattleScene::update()
     processAttacks();
     updateFloatingTexts();
     checkBuffs();
+    updateBullets();
 
     checkGameOver();
 }
@@ -426,22 +441,43 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
         Scene::keyReleaseEvent(event);
     }
 }
+
 void BattleScene::processAttacks()
 {
     if (!character || !character2) return;
+    // 近战攻击逻辑
     Weapon* weapon1 = character->getWeapon();
     Weapon* weapon2 = character2->getWeapon();
     QRectF hitbox1(character->x() - 15, character->y() - 100, 30, 150);
     QRectF hitbox2(character2->x() - 15, character2->y() - 100, 30, 150);
-    if (weapon1 && weapon1->isVisible() && !weapon1->hasDealtDamage && weapon1->sceneBoundingRect().intersects(hitbox2))
-    {
-        character2->takeDamage(10);
-        weapon1->hasDealtDamage = true;
+
+    if (auto meleeWeapon = dynamic_cast<Knife*>(weapon1)) {
+        if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox2))
+        {
+            character2->takeDamage(10);
+            meleeWeapon->hasDealtDamage = true;
+        }
+    } else if (auto meleeWeapon = dynamic_cast<Fist*>(weapon1)) {
+        if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox2))
+        {
+            character2->takeDamage(10);
+            meleeWeapon->hasDealtDamage = true;
+        }
     }
-    if (weapon2 && weapon2->isVisible() && !weapon2->hasDealtDamage && weapon2->sceneBoundingRect().intersects(hitbox1))
-    {
-        character->takeDamage(10);
-        weapon2->hasDealtDamage = true;
+
+
+    if (auto meleeWeapon = dynamic_cast<Knife*>(weapon2)) {
+        if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox1))
+        {
+            character->takeDamage(10);
+            meleeWeapon->hasDealtDamage = true;
+        }
+    } else if (auto meleeWeapon = dynamic_cast<Fist*>(weapon2)) {
+        if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox1))
+        {
+            character->takeDamage(10);
+            meleeWeapon->hasDealtDamage = true;
+        }
     }
 }
 void BattleScene::processMovement()
@@ -572,4 +608,44 @@ Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountab
     }
     return nullptr;
 }
-// --- ** LOGIC CHANGE ENDS HERE ** ---
+
+void BattleScene::updateBullets()
+{
+    // 从场景中动态获取所有子弹
+    bullets.clear();
+    for (QGraphicsItem* item : items()) {
+        if (auto bullet = dynamic_cast<Bullet*>(item)) {
+            bullets.append(bullet);
+        }
+    }
+
+    // 遍历所有子弹
+    for (int i = bullets.size() - 1; i >= 0; --i)
+    {
+        Bullet *bullet = bullets[i];
+        bullet->updatePosition();
+
+        bool hit = false;
+        Character* owner = bullet->getOwner();
+
+        // 检查碰撞：子弹不能伤害发射它的玩家
+        if (owner == character2 && bullet->collidesWithItem(character))
+        {
+            character->takeDamage(bullet->getDamage());
+            hit = true;
+        }
+        else if (owner == character && bullet->collidesWithItem(character2))
+        {
+            character2->takeDamage(bullet->getDamage());
+            hit = true;
+        }
+
+        // 如果子弹击中目标或飞出屏幕，就销毁它
+        if (hit || !sceneRect().contains(bullet->pos()))
+        {
+            removeItem(bullet);
+            delete bullet;
+            bullets.removeAt(i);
+        }
+    }
+}

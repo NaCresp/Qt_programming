@@ -13,5 +13,8 @@
         <file>Items\Medicine\Kit\kit.png</file>
         <file>Items\Medicine\Adrenaline\adrenaline.png</file>
         <file>Items\Buff\Health\health.png</file>
+        <file>Items\Weapon\Sniper\sniper.png</file>
+        <file>Items/Weapon/Rifle/rifle.png</file>
+        <file>Items\Weapon\Bullet\bullet.png</file>
     </qresource>
 </RCC>

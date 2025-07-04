@@ -15,6 +15,7 @@
 #include "../Items/Medicine/Adrenaline.h" // 新增
 #include <QGraphicsRectItem>
 #include <QDateTime> // <-- 包含 QDateTime
+#include "../Items/Weapon/Bullet.h"
 
 // 前向声明 FloatingText 类
 class FloatingText;
@@ -84,7 +85,12 @@ private:
     QGraphicsRectItem *player2HpBar;
     QGraphicsTextItem *player2HpText;
 
+    void updateBullets(); 
+    QList<Bullet*> bullets;
+
     Weapon *spareWeapon;
+    Weapon *sniper; 
+    Weapon *rifle;  
 };
 
 #endif // QT_PROGRAMMING_2024_BATTLESCENE_H
