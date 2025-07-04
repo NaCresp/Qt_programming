@@ -3,6 +3,7 @@
 #include <QPen>
 #include <QFont>
 #include <QBrush>
+#include <random> // 用于生成随机数
 #include "BattleScene.h"
 #include "../Items/Weapon/Fist.h"
 #include "../Items/Characters/Link.h"
@@ -15,14 +16,17 @@
 #include "../Items/Weapon/Rifle.h"
 #include "../Items/Weapon/Bullet.h"
 #include "../Items/Weapon/RangedWeapon.h"
+#include "../Items/Medicine/Bandage.h"
+#include "../Items/Medicine/Kit.h"
+#include "../Items/Medicine/Adrenaline.h"
+
 
 const qreal GRAVITY = 0.5;
 const qreal HP_BAR_WIDTH = 200.0;
 const qreal HP_BAR_HEIGHT = 20.0;
 const qreal AMMO_BAR_WIDTH = 150.0;
 const qreal AMMO_BAR_HEIGHT = 15.0;
-// --- 新增代码：定义弹药槽的Y坐标常量 ---
-const qreal AMMO_BAR_Y_POS = 10 + HP_BAR_HEIGHT + 20; // 从原来的 +5 改为 +20，增加间距
+const qreal AMMO_BAR_Y_POS = 10 + HP_BAR_HEIGHT + 20;
 
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
@@ -33,15 +37,7 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     map = new Battlefield();
     character = new Link();
     character2 = new Link();
-    spareArmor = new FlamebreakerArmor();
-    spareArmor2 = new FlamebreakerArmor();
-    spareWeapon = new Knife();
-    sniper = new Sniper();
-    rifle = new Rifle();
-    bandage = new Bandage();
-    kit = new Kit();
-    adrenaline = new Adrenaline();
-
+    
     map->setZValue(-10);
 
     const qreal characterScale = 0.3;
@@ -51,41 +47,15 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(map);
     addItem(character);
     addItem(character2);
-    addItem(spareArmor);
-    addItem(spareArmor2);
-    addItem(spareWeapon);
-    addItem(sniper);
-    addItem(rifle);
-    addItem(bandage);
-    addItem(kit);
-    addItem(adrenaline);
 
     map->scaleToFitScene(this);
     character->setPos(map->getSpawnPos() - QPointF(100, 0));
     character2->setPos(map->getSpawnPos() + QPointF(100, 0));
-
-    spareArmor->unmount();
-    spareArmor->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.75, map->getFloorHeight());
-    spareArmor2->unmount();
-    spareArmor2->setPos(sceneRect().left() + (sceneRect().right() - sceneRect().left()) * 0.25, map->getFloorHeight());
-
-    spareWeapon->unmount();
-    spareWeapon->setZValue(1);
-    spareWeapon->setPos(sceneRect().center().x(), map->getFloorHeight() - 20);
-
-    sniper->unmount();
-    sniper->setPos(sceneRect().center().x() - 150, map->getFloorHeight() - 20);
-
-    rifle->unmount();
-    rifle->setPos(sceneRect().center().x() + 150, map->getFloorHeight() - 20);
-
-    bandage->unmount();
-    bandage->setPos(sceneRect().center().x() - 100, map->getFloorHeight() - 20);
-    kit->unmount();
-    kit->setPos(sceneRect().center().x() + 100, map->getFloorHeight() - 20);
-    adrenaline->unmount();
-    adrenaline->setPos(sceneRect().center().x() + 200, map->getFloorHeight() - 20);
-
+    
+    // 初始化并启动物品掉落计时器
+    itemDropTimer = new QTimer(this);
+    connect(itemDropTimer, &QTimer::timeout, this, &BattleScene::spawnRandomItem);
+    itemDropTimer->start(5000); // 5000毫秒 = 5秒
 
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(192, 285, 240, 20), map));
@@ -105,7 +75,6 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpText = new QGraphicsTextItem();
-    // --- 位置修改：使用新的Y坐标常量 ---
     player1AmmoBarBg = new QGraphicsRectItem(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player1AmmoBar = new QGraphicsRectItem(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player1AmmoText = new QGraphicsTextItem();
@@ -113,7 +82,6 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player2HpBarBg = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpBar = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpText = new QGraphicsTextItem();
-    // --- 位置修改：使用新的Y坐标常量 ---
     player2AmmoBarBg = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player2AmmoBar = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player2AmmoText = new QGraphicsTextItem();
@@ -142,10 +110,8 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
 
     // Positioning
     player1HpText->setPos(20, 10 + HP_BAR_HEIGHT);
-    // --- 位置修改：使用新的Y坐标常量 ---
     player1AmmoText->setPos(20 + AMMO_BAR_WIDTH + 5, AMMO_BAR_Y_POS);
     player2HpText->setPos(width() - HP_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT);
-    // --- 位置修改：使用新的Y坐标常量 ---
     player2AmmoText->setPos(width() - AMMO_BAR_WIDTH - 20 - 50, AMMO_BAR_Y_POS);
 
     // Z-Value
@@ -191,6 +157,45 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     connect(character, &Character::healthChanged, this, &BattleScene::showFloatingText);
     connect(character2, &Character::healthChanged, this, &BattleScene::showFloatingText);
 }
+
+void BattleScene::spawnRandomItem()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> typeDist(0, 1); // 0: 药品, 1: 武器
+    std::uniform_int_distribution<> medicineDist(0, 2); // 0: Bandage, 1: Kit, 2: Adrenaline
+    std::uniform_int_distribution<> weaponDist(0, 2); // 0: Knife, 1: Rifle, 2: Sniper
+    std::uniform_real_distribution<> xPosDist(sceneRect().left() + 50, sceneRect().right() - 50);
+
+    Item* newItem = nullptr;
+    int itemType = typeDist(gen);
+
+    if (itemType == 0) { // 生成药品
+        int medicineType = medicineDist(gen);
+        switch (medicineType) {
+            case 0: newItem = new Bandage(); break;
+            case 1: newItem = new Kit(); break;
+            case 2: newItem = new Adrenaline(); break;
+        }
+    } else { // 生成武器
+        int weaponType = weaponDist(gen);
+        switch (weaponType) {
+            case 0: newItem = new Knife(); break;
+            case 1: newItem = new Rifle(); break;
+            case 2: newItem = new Sniper(); break;
+        }
+    }
+
+    if (newItem) {
+        if (auto mountable = dynamic_cast<Mountable*>(newItem)) {
+            mountable->unmount();
+        }
+        qreal xPos = xPosDist(gen);
+        newItem->setPos(xPos, sceneRect().top()); // 从天空掉落
+        addItem(newItem);
+    }
+}
+
 
 void BattleScene::update()
 {
@@ -256,6 +261,7 @@ void BattleScene::checkGameOver() {
         updateHpDisplay();
 
         gameOver = true;
+        itemDropTimer->stop(); // 游戏结束时停止生成物品
         gameOverText->setPlainText(winnerText);
 
         QRectF textRect = gameOverText->boundingRect();
@@ -343,7 +349,6 @@ void BattleScene::updateAmmoDisplay()
         int currentAmmo = rangedWeapon->getCurrentAmmo();
         int maxAmmo = rangedWeapon->getMaxAmmo();
         qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
-        // --- 位置修改：使用新的Y坐标常量 ---
         player1AmmoBar->setRect(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
         player1AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
     } else {
@@ -360,7 +365,6 @@ void BattleScene::updateAmmoDisplay()
         int currentAmmo = rangedWeapon->getCurrentAmmo();
         int maxAmmo = rangedWeapon->getMaxAmmo();
         qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
-        // --- 位置修改：使用新的Y坐标常量 ---
         player2AmmoBar->setRect(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
         player2AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
     } else {
@@ -630,6 +634,61 @@ void BattleScene::processMovement()
                 continue;
             }
             childItem->setVisible(!shouldBeHidden);
+        }
+    }
+    
+    // --- 终极修复版：为掉落的物品应用物理效果 ---
+    for (QGraphicsItem *graphicsItem : items())
+    {
+        // 确保转换成功且对象没有父项（即它是场景的直接子项，是独立的掉落物）
+        auto item = dynamic_cast<Item*>(graphicsItem);
+        if (!item || item->parentItem() != nullptr) {
+            continue;
+        }
+
+        // 进一步确保我们只处理“可挂载”的物品，比如武器和药品
+        auto mountable = dynamic_cast<Mountable*>(item);
+        if (!mountable || mountable->isMounted()) {
+            continue;
+        }
+
+        item->applyGravity(GRAVITY);
+
+        QPointF nextVelocity = item->getVelocity() * (double)deltaTime / 15.0;
+        QPointF nextPos = item->pos() + nextVelocity;
+        
+        qreal effectiveFloorY = map->getFloorHeight();
+        
+        // 使用物品的包围盒来进行更精确的碰撞检测
+        QRectF itemRect = item->sceneBoundingRect();
+
+        if (item->getVelocity().y() >= 0) // 仅在下落时检测平台
+        {
+            for (auto p : platforms)
+            {
+                QRectF pRect = p->sceneBoundingRect();
+                if (itemRect.right() > pRect.left() && itemRect.left() < pRect.right())
+                {
+                    // 检查物品的底部在下一帧是否会穿过平台的顶部
+                    if (itemRect.bottom() <= pRect.top() && (itemRect.bottom() + nextVelocity.y()) >= pRect.top())
+                    {
+                        effectiveFloorY = pRect.top();
+                        break; 
+                    }
+                }
+            }
+        }
+
+        // 检查与最终有效“地面”的碰撞
+        if (itemRect.bottom() + nextVelocity.y() >= effectiveFloorY)
+        {
+            // 将物品的底部精确地放在地面/平台上
+            item->setPos(nextPos.x(), effectiveFloorY - itemRect.height());
+            item->setVelocity(QPointF(item->getVelocity().x(), 0)); // 停止下落
+        }
+        else
+        {
+            item->setPos(nextPos);
         }
     }
 }

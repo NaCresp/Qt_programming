@@ -28,8 +28,7 @@ public:
     void setRightDown(bool rightDown);
     [[nodiscard]] bool isPickDown() const;
     void setPickDown(bool pickDown);
-    [[nodiscard]] const QPointF &getVelocity() const;
-    void setVelocity(const QPointF &velocity);
+    // --- 已移除 ---: getVelocity 和 setVelocity 方法 (已继承自 Item)
     [[nodiscard]] bool isPicking() const;
     void setAttackDown(bool attackDown);
     [[nodiscard]] bool isAttackDown() const;
@@ -41,7 +40,7 @@ public:
 
     void processInput();
     void jump();
-    void applyGravity(qreal gravity);
+    // --- 已移除 ---: applyGravity 方法 (已继承自 Item)
 
     void setOnGround(bool onGround);
     [[nodiscard]] bool isOnGround() const;
@@ -78,7 +77,7 @@ protected:
     Weapon *weapon{};
     Speed *speedBuffIcon{};
     Health *healthBuffIcon{}; // 新增
-    QPointF velocity{};
+    // --- 已移除 ---: velocity 向量 (已继承自 Item)
 
 private:
     bool leftDown{}, rightDown{}, pickDown{};

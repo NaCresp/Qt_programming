@@ -7,14 +7,15 @@
 
 #include <QKeyEvent>
 #include <QGraphicsTextItem>
+#include <QTimer> // 确保 QTimer 被包含
 #include "Scene.h"
 #include "../Items/Maps/Map.h"
 #include "../Items/Characters/Character.h"
-#include "../Items/Medicine/Bandage.h" // 新增
-#include "../Items/Medicine/Kit.h"     // 新增
-#include "../Items/Medicine/Adrenaline.h" // 新增
+#include "../Items/Medicine/Bandage.h"
+#include "../Items/Medicine/Kit.h"
+#include "../Items/Medicine/Adrenaline.h"
 #include <QGraphicsRectItem>
-#include <QDateTime> // <-- 包含 QDateTime
+#include <QDateTime>
 #include "../Items/Weapon/Bullet.h"
 
 // 前向声明 FloatingText 类
@@ -34,31 +35,29 @@ public:
 protected slots:
     void update() override;
     void showFloatingText(int amount, const QPointF &position);
+    void spawnRandomItem(); // 新增的槽函数，用于生成物品
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
 
 private:
-    // --- 新增代码：用于游戏结束逻辑 ---
-    bool gameOver;                          // 游戏结束标志
-    QGraphicsTextItem *gameOverText;        // 显示游戏结束信息的文本
-    void checkGameOver();                   // 检查游戏是否结束的函数
-    // --- 新增代码结束 ---
+    // --- 游戏结束逻辑 ---
+    bool gameOver;
+    QGraphicsTextItem *gameOverText;
+    void checkGameOver();
 
-    // --- 用于管理浮动文字 ---
+    // --- 管理浮动文字 ---
     struct FloatingTextInfo {
         FloatingText *item;
         qint64 creationTime;
     };
     QList<FloatingTextInfo> activeFloatingTexts;
     void updateFloatingTexts();
-    // --- 管理结束 ---
 
-    // --- 新增代码: Buff 区域 ---
+    // --- Buff 区域 ---
     QGraphicsRectItem *speedBuffZone;
     void checkBuffs();
-    // --- 新增代码结束 ---
 
     void updateHpDisplay();
     void updateAmmoDisplay();
@@ -69,16 +68,11 @@ private:
     Map *map;
     Character *character;
     Character *character2;
-    Armor *spareArmor;
-    Armor *spareArmor2;
-    // --- 新增医疗物品 ---
-    Bandage *bandage;
-    Kit *kit;
-    Adrenaline *adrenaline;
-    // --- 新增结束 ---
+
     QList<QGraphicsRectItem *> platforms;
     QGraphicsRectItem *hidingZone;
 
+    // UI元素
     QGraphicsRectItem *player1HpBarBg;
     QGraphicsRectItem *player1HpBar;
     QGraphicsTextItem *player1HpText;
@@ -94,12 +88,10 @@ private:
     QGraphicsTextItem *player2AmmoText;
 
 
-    void updateBullets(); 
+    void updateBullets();
     QList<Bullet*> bullets;
-
-    Weapon *spareWeapon;
-    Weapon *sniper; 
-    Weapon *rifle;  
+    
+    QTimer *itemDropTimer; // 新增的计时器
 };
 
 #endif // QT_PROGRAMMING_2024_BATTLESCENE_H

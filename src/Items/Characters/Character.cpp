@@ -41,12 +41,10 @@ Health* Character::getHealthBuffIcon() const
 void Character::pickupWeapon(Weapon* newWeapon)
 {
     if (this->weapon) {
-        if (dynamic_cast<Fist*>(this->weapon) == nullptr) {
-            delete this->weapon;
-        } else {
-            // 现在Fist对象会被统一管理，直接删除即可
-            delete this->weapon;
-        }
+        // --- 核心修复：在销毁前，先断开父子关系 ---
+        // 这可以防止在Qt事件循环的间隙中，其他代码仍然尝试访问这个即将被删除的子项
+        this->weapon->setParentItem(nullptr);
+        this->weapon->deleteLater();
     }
 
     this->weapon = newWeapon;
@@ -180,17 +178,13 @@ void Character::checkWeaponAmmo()
         if (rangedWeapon->getCurrentAmmo() <= 0) {
             rangedWeapon->deleteLater();
             
-            // --- 核心修正：使用统一的装备逻辑 ---
             weapon = new Fist(this);
-            // 调用Fist自己的mountToParent，确保状态一致
             weapon->mountToParent(); 
         }
     }
 }
 
 void Character::setPickDown(bool pickDown) { Character::pickDown = pickDown; }
-const QPointF &Character::getVelocity() const { return velocity; }
-void Character::setVelocity(const QPointF &velocity) { Character::velocity = velocity; }
 
 void Character::processInput()
 {
@@ -234,7 +228,6 @@ void Character::jump()
     }
 }
 
-void Character::applyGravity(qreal gravity) { velocity.setY(velocity.y() + gravity); }
 void Character::setOnGround(bool onGround) { this->onGround = onGround; }
 bool Character::isOnGround() const { return onGround; }
 bool Character::isPicking() const { return picking; }
