@@ -14,10 +14,13 @@
 #include "../Items/Weapon/Sniper.h"
 #include "../Items/Weapon/Rifle.h"
 #include "../Items/Weapon/Bullet.h"
+#include "../Items/Weapon/RangedWeapon.h"
 
 const qreal GRAVITY = 0.5;
 const qreal HP_BAR_WIDTH = 200.0;
 const qreal HP_BAR_HEIGHT = 20.0;
+const qreal AMMO_BAR_WIDTH = 150.0;
+const qreal AMMO_BAR_HEIGHT = 15.0;
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
 {
@@ -84,54 +87,92 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(192, 285, 240, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(544, 300, 240, 20), map));
-    platforms[0]->setBrush(Qt::darkGray);
-    platforms[1]->setBrush(QColor(173, 216, 230));
-    platforms[2]->setBrush(QColor(139, 69, 19));
-    for (auto p : platforms) { p->setPen(Qt::NoPen); }
+    for (auto p : platforms) { p->setBrush(Qt::darkGray); p->setPen(Qt::NoPen); }
 
     hidingZone = new QGraphicsRectItem(50, 380, 320, 20);
     hidingZone->setPen(Qt::NoPen);
     addItem(hidingZone);
 
     speedBuffZone = new QGraphicsRectItem(380, 410, 430, 5);
-    // 用于调试区域
-    // QColor buffColor(0, 0, 255, 80);
-    // speedBuffZone->setBrush(QBrush(buffColor));
-
     speedBuffZone->setPen(Qt::NoPen);
     speedBuffZone->setZValue(-5);
     addItem(speedBuffZone);
 
+    // --- HP and Ammo Bars ---
     player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpText = new QGraphicsTextItem();
+    player1AmmoBarBg = new QGraphicsRectItem(20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    player1AmmoBar = new QGraphicsRectItem(20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    player1AmmoText = new QGraphicsTextItem();
+
     player2HpBarBg = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpBar = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpText = new QGraphicsTextItem();
+    player2AmmoBarBg = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    player2AmmoBar = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    player2AmmoText = new QGraphicsTextItem();
+    
+    // Styling
     player1HpBarBg->setBrush(Qt::darkGray);
     player1HpBar->setBrush(Qt::red);
+    player1AmmoBarBg->setBrush(Qt::darkGray);
+    player1AmmoBar->setBrush(Qt::yellow);
+
     player2HpBarBg->setBrush(Qt::darkGray);
     player2HpBar->setBrush(Qt::red);
+    player2AmmoBarBg->setBrush(Qt::darkGray);
+    player2AmmoBar->setBrush(Qt::yellow);
+
     QFont font("Arial", 12, QFont::Bold);
     player1HpText->setFont(font);
+    player1AmmoText->setFont(font);
     player2HpText->setFont(font);
+    player2AmmoText->setFont(font);
+
     player1HpText->setDefaultTextColor(Qt::white);
+    player1AmmoText->setDefaultTextColor(Qt::white);
     player2HpText->setDefaultTextColor(Qt::white);
+    player2AmmoText->setDefaultTextColor(Qt::white);
+
+    // Positioning
     player1HpText->setPos(20, 10 + HP_BAR_HEIGHT);
+    player1AmmoText->setPos(20 + AMMO_BAR_WIDTH + 5, 10 + HP_BAR_HEIGHT + 5);
     player2HpText->setPos(width() - HP_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT);
+    player2AmmoText->setPos(width() - AMMO_BAR_WIDTH - 20 - 50, 10 + HP_BAR_HEIGHT + 5);
+
+    // Z-Value
     player1HpBarBg->setZValue(10);
     player1HpBar->setZValue(11);
     player1HpText->setZValue(12);
+    player1AmmoBarBg->setZValue(10);
+    player1AmmoBar->setZValue(11);
+    player1AmmoText->setZValue(12);
+
     player2HpBarBg->setZValue(10);
     player2HpBar->setZValue(11);
     player2HpText->setZValue(12);
+    player2AmmoBarBg->setZValue(10);
+    player2AmmoBar->setZValue(11);
+    player2AmmoText->setZValue(12);
+
     addItem(player1HpBarBg);
     addItem(player1HpBar);
     addItem(player1HpText);
+    addItem(player1AmmoBarBg);
+    addItem(player1AmmoBar);
+    addItem(player1AmmoText);
+
     addItem(player2HpBarBg);
     addItem(player2HpBar);
     addItem(player2HpText);
+    addItem(player2AmmoBarBg);
+    addItem(player2AmmoBar);
+    addItem(player2AmmoText);
+
+
     updateHpDisplay();
+    updateAmmoDisplay();
 
     gameOverText = new QGraphicsTextItem();
     gameOverText->setFont(QFont("Arial", 50, QFont::Bold));
@@ -152,6 +193,7 @@ void BattleScene::update()
 
     Scene::update();
     updateHpDisplay();
+    updateAmmoDisplay();
     processAttacks();
     updateFloatingTexts();
     checkBuffs();
@@ -281,6 +323,45 @@ void BattleScene::updateHpDisplay()
     player2HpBar->setRect(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH * p2_percent, HP_BAR_HEIGHT);
     player2HpText->setPlainText(QString("%1 / %2").arg(p2_hp).arg(p2_max_hp));
 }
+
+void BattleScene::updateAmmoDisplay()
+{
+    if (!character || !character2) return;
+
+    // Player 1
+    if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(character->getWeapon())) {
+        player1AmmoBarBg->setVisible(true);
+        player1AmmoBar->setVisible(true);
+        player1AmmoText->setVisible(true);
+        int currentAmmo = rangedWeapon->getCurrentAmmo();
+        int maxAmmo = rangedWeapon->getMaxAmmo();
+        qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
+        player1AmmoBar->setRect(20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
+        player1AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
+    } else {
+        player1AmmoBarBg->setVisible(false);
+        player1AmmoBar->setVisible(false);
+        player1AmmoText->setVisible(false);
+    }
+
+    // Player 2
+    if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(character2->getWeapon())) {
+        player2AmmoBarBg->setVisible(true);
+        player2AmmoBar->setVisible(true);
+        player2AmmoText->setVisible(true);
+        int currentAmmo = rangedWeapon->getCurrentAmmo();
+        int maxAmmo = rangedWeapon->getMaxAmmo();
+        qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
+        player2AmmoBar->setRect(width() - AMMO_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
+        player2AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
+    } else {
+        player2AmmoBarBg->setVisible(false);
+        player2AmmoBar->setVisible(false);
+        player2AmmoText->setVisible(false);
+    }
+}
+
+
 void BattleScene::processInput()
 {
     Scene::processInput();
@@ -454,7 +535,7 @@ void BattleScene::processAttacks()
     if (auto meleeWeapon = dynamic_cast<Knife*>(weapon1)) {
         if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox2))
         {
-            character2->takeDamage(10);
+            character2->takeDamage(15);
             meleeWeapon->hasDealtDamage = true;
         }
     } else if (auto meleeWeapon = dynamic_cast<Fist*>(weapon1)) {
@@ -469,7 +550,7 @@ void BattleScene::processAttacks()
     if (auto meleeWeapon = dynamic_cast<Knife*>(weapon2)) {
         if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox1))
         {
-            character->takeDamage(10);
+            character->takeDamage(15);
             meleeWeapon->hasDealtDamage = true;
         }
     } else if (auto meleeWeapon = dynamic_cast<Fist*>(weapon2)) {
@@ -585,7 +666,7 @@ Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal 
     return nearest;
 }
 
-// --- ** LOGIC CHANGE STARTS HERE ** ---
+
 Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable)
 {
     if (auto armor = dynamic_cast<Armor *>(mountable))
@@ -599,11 +680,8 @@ Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountab
     }
     if (auto medicine = dynamic_cast<Medicine *>(mountable))
     {
-        // 先应用效果
         medicine->applyEffect(character);
-        // 然后安排删除该对象，它会自动从场景中移除
         medicine->deleteLater();
-        // 因为物品被消耗了，所以返回nullptr
         return nullptr;
     }
     return nullptr;
@@ -611,7 +689,6 @@ Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountab
 
 void BattleScene::updateBullets()
 {
-    // 从场景中动态获取所有子弹
     bullets.clear();
     for (QGraphicsItem* item : items()) {
         if (auto bullet = dynamic_cast<Bullet*>(item)) {
@@ -619,7 +696,6 @@ void BattleScene::updateBullets()
         }
     }
 
-    // 遍历所有子弹
     for (int i = bullets.size() - 1; i >= 0; --i)
     {
         Bullet *bullet = bullets[i];
@@ -628,7 +704,6 @@ void BattleScene::updateBullets()
         bool hit = false;
         Character* owner = bullet->getOwner();
 
-        // 检查碰撞：子弹不能伤害发射它的玩家
         if (owner == character2 && bullet->collidesWithItem(character))
         {
             character->takeDamage(bullet->getDamage());
@@ -640,7 +715,6 @@ void BattleScene::updateBullets()
             hit = true;
         }
 
-        // 如果子弹击中目标或飞出屏幕，就销毁它
         if (hit || !sceneRect().contains(bullet->pos()))
         {
             removeItem(bullet);

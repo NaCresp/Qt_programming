@@ -4,8 +4,8 @@ Rifle::Rifle(QObject *parent)
     : RangedWeapon(parent,
                    ":/Items/Weapon/Rifle/rifle.png",
                    ":/Items/Weapon/Bullet/bullet.png",
-                   20, // 较低伤害
-                   300) // 快射速
+                   20,    // 伤害
+                   300,   // 射速
+                   20)    // 弹药量
 {
-    // 步枪的特定属性（如果有）
 }

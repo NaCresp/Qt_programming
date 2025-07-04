@@ -12,7 +12,7 @@ Fist::Fist(QObject *parent) : Weapon(parent, ":/Items/Weapon/Fist/fist.png")
         animation = nullptr;
     }
 
-    // 使用我们定义的高度常量来设置位置
+    // 这部分初始化保留，作为对象的默认状态
     setPos(-20, FIST_Y_POSITION);
     setScale(0.2);
     setVisible(false);
@@ -27,6 +27,23 @@ Fist::Fist(QObject *parent) : Weapon(parent, ":/Items/Weapon/Fist/fist.png")
     connect(animationTimer, &QTimer::timeout, this, &Fist::updateAnimation);
     animationTimer->setInterval(1000 / 60); // 约 60 FPS
 }
+
+// --- 新增代码：实现 Fist 专属的 mountToParent ---
+void Fist::mountToParent()
+{
+    // 首先调用 Mountable 的基础实现
+    Mountable::mountToParent();
+
+    // 然后应用 Fist 特有的属性，确保尺寸和位置正确
+    setPos(-20, FIST_Y_POSITION);
+    setScale(0.2); // 确保尺寸是 0.2
+    setZValue(1);
+
+    // 最重要的是，拳头在“装备”状态下应该是不可见的
+    // 它只在调用 attack() 时才短暂出现
+    setVisible(false);
+}
+
 
 // attack 函数：启动手动动画
 void Fist::attack()

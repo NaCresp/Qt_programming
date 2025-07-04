@@ -58,13 +58,15 @@ public:
     // --- 新增代码结束 ---
 
     Armor *pickupArmor(Armor *newArmor);
-    Weapon *pickupWeapon(Weapon *newWeapon);
+    void pickupWeapon(Weapon *newWeapon);
 
     void applySpeedBuff();
     void removeSpeedBuff();
     [[nodiscard]] bool hasSpeedBuff() const;
 
     void applyAdrenalineBuff(); // 新增
+    void checkWeaponAmmo();
+
 
 signals:
     void healthChanged(int amount, const QPointF &position);

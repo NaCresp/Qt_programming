@@ -9,8 +9,11 @@ class RangedWeapon : public Weapon
     Q_OBJECT
 
 public:
-    explicit RangedWeapon(QObject *parent, const QString &pixmapPath, const QString &bulletPixmapPath, int damage, int fireRate);
+    explicit RangedWeapon(QObject *parent, const QString &pixmapPath, const QString &bulletPixmapPath, int damage, int fireRate, int maxAmmo);
     void attack() override;
+
+    [[nodiscard]] int getCurrentAmmo() const;
+    [[nodiscard]] int getMaxAmmo() const;
 
 protected:
     int damage;
@@ -18,6 +21,8 @@ protected:
     QString bulletPixmapPath;
     QTimer* fireRateTimer;
     bool canFire;
+    int maxAmmo;
+    int currentAmmo;
 };
 
 #endif // RANGEDWEAPON_H

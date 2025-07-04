@@ -1,6 +1,8 @@
 #include <QTransform>
 #include "Character.h"
 #include "../Weapon/Fist.h"
+#include "../Weapon/RangedWeapon.h"
+
 
 const qreal JUMP_STRENGTH = -15.0;
 const qreal SQUAT_OFFSET_Y = 20.0;
@@ -12,49 +14,47 @@ QRectF Character::boundingRect() const
 
 Character::Character(QObject *parent) : Item(parent, "")
 {
+    // --- 核心修正：统一初始拳头的装备逻辑 ---
     weapon = new Fist(this);
+    // 确保初始的拳头也通过 mountToParent() 进行配置
+    // 这会调用我们刚刚在 Fist 类中重写的新方法
+    weapon->mountToParent();
+
     maxHp = 100;
     currentHp = maxHp;
     speedBuffIcon = nullptr;
-    healthBuffIcon = nullptr; // 新增
+    healthBuffIcon = nullptr;
 
-    // --- 新增肾上腺素相关 ---
     adrenalineTimer = new QTimer(this);
     connect(adrenalineTimer, &QTimer::timeout, this, &Character::handleAdrenalineTick);
-    // --- 新增结束 ---
 }
 
-// --- 新增代码：实现getter ---
 Speed* Character::getSpeedBuffIcon() const
 {
     return speedBuffIcon;
 }
-Health* Character::getHealthBuffIcon() const // 新增
+Health* Character::getHealthBuffIcon() const
 {
     return healthBuffIcon;
 }
-// --- 新增代码结束 ---
 
-Weapon* Character::pickupWeapon(Weapon* newWeapon)
+void Character::pickupWeapon(Weapon* newWeapon)
 {
-    Weapon* oldWeapon = this->weapon;
-
-    if (dynamic_cast<Fist*>(oldWeapon) == nullptr) {
-        oldWeapon->unmount();
-        oldWeapon->setPos(newWeapon->pos());
-        oldWeapon->setParentItem(this->parentItem());
-    } else {
-        oldWeapon->setVisible(false);
-        oldWeapon = nullptr;
+    if (this->weapon) {
+        if (dynamic_cast<Fist*>(this->weapon) == nullptr) {
+            delete this->weapon;
+        } else {
+            // 现在Fist对象会被统一管理，直接删除即可
+            delete this->weapon;
+        }
     }
 
     this->weapon = newWeapon;
     this->weapon->setParentItem(this);
     this->weapon->mountToParent();
     this->weapon->hasDealtDamage = true;
-
-    return oldWeapon;
 }
+
 
 Armor* Character::pickupArmor(Armor *newArmor)
 {
@@ -103,24 +103,21 @@ void Character::removeSpeedBuff()
     }
 }
 
-// --- 新增肾上腺素逻辑 ---
 void Character::applyAdrenalineBuff()
 {
-    // 立即并持续增加移速
     applySpeedBuff();
 
-    // 显示持续回血图标并开始回血
     if (!healthBuffIcon) {
         healthBuffIcon = new Health(this);
         healthBuffIcon->mountToParent();
     }
     healthBuffIcon->setVisible(true);
 
-    adrenalineTicks = 5; // 效果持续5秒
+    adrenalineTicks = 5; 
     if (!adrenalineTimer->isActive()) {
-        adrenalineTimer->start(1000); // 每秒触发一次
+        adrenalineTimer->start(1000); 
     }
-    handleAdrenalineTick(); // 立即回一次血
+    handleAdrenalineTick(); 
 }
 
 void Character::handleAdrenalineTick()
@@ -128,14 +125,12 @@ void Character::handleAdrenalineTick()
     if (adrenalineTicks <= 0) {
         adrenalineTimer->stop();
         if (healthBuffIcon) healthBuffIcon->setVisible(false);
-        // 肾上腺素效果结束，移速恢复正常
         removeSpeedBuff();
         return;
     }
     heal(10);
     adrenalineTicks--;
 }
-// --- 新增结束 ---
 
 bool Character::hasSpeedBuff() const
 {
@@ -175,6 +170,21 @@ void Character::attack()
     if (weapon)
     {
         weapon->attack();
+        checkWeaponAmmo();
+    }
+}
+
+void Character::checkWeaponAmmo()
+{
+    if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(weapon)) {
+        if (rangedWeapon->getCurrentAmmo() <= 0) {
+            rangedWeapon->deleteLater();
+            
+            // --- 核心修正：使用统一的装备逻辑 ---
+            weapon = new Fist(this);
+            // 调用Fist自己的mountToParent，确保状态一致
+            weapon->mountToParent(); 
+        }
     }
 }
 

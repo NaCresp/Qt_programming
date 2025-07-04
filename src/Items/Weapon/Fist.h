@@ -12,6 +12,10 @@ class Fist : public Weapon
 public:
     explicit Fist(QObject *parent);
     void attack() override;
+    
+    // --- 新增代码：重写 mountToParent ---
+    // 为 Fist 添加专属的装备逻辑
+    void mountToParent() override;
 
 private slots:
     void updateAnimation(); // 用于更新动画每一帧的槽函数
