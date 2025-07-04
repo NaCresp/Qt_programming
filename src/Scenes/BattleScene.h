@@ -28,6 +28,9 @@ class BattleScene : public Scene
 public:
     explicit BattleScene(QObject *parent);
 
+    // --- 新增：为 BattleScene 重写 startLoop ---
+    void startLoop();
+
     void processInput() override;
     void processMovement() override;
     void processPicking() override;
@@ -91,7 +94,7 @@ private:
     void updateBullets();
     QList<Bullet*> bullets;
     
-    QTimer *itemDropTimer; // 新增的计时器
+    QTimer *itemDropTimer;
 };
 
 #endif // QT_PROGRAMMING_2024_BATTLESCENE_H

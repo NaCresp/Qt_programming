@@ -52,10 +52,10 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     character->setPos(map->getSpawnPos() - QPointF(100, 0));
     character2->setPos(map->getSpawnPos() + QPointF(100, 0));
     
-    // 初始化并启动物品掉落计时器
+    // 初始化物品掉落计时器，但先不启动
     itemDropTimer = new QTimer(this);
     connect(itemDropTimer, &QTimer::timeout, this, &BattleScene::spawnRandomItem);
-    itemDropTimer->start(5000); // 5000毫秒 = 5秒
+    // --- 修改：移除此处的 itemDropTimer->start(5000); ---
 
     platforms.append(new QGraphicsRectItem(QRectF(300, 160, 405, 20), map));
     platforms.append(new QGraphicsRectItem(QRectF(192, 285, 240, 20), map));
@@ -156,6 +156,16 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
 
     connect(character, &Character::healthChanged, this, &BattleScene::showFloatingText);
     connect(character2, &Character::healthChanged, this, &BattleScene::showFloatingText);
+}
+
+// --- 新增：实现 BattleScene 专属的 startLoop ---
+void BattleScene::startLoop()
+{
+    // 首先，调用父类的 startLoop 来启动核心的游戏循环（用于移动、渲染等）
+    Scene::startLoop();
+
+    // 然后，只在这里启动物品掉落的计时器
+    itemDropTimer->start(5000);
 }
 
 void BattleScene::spawnRandomItem()
