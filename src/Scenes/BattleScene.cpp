@@ -21,6 +21,9 @@ const qreal HP_BAR_WIDTH = 200.0;
 const qreal HP_BAR_HEIGHT = 20.0;
 const qreal AMMO_BAR_WIDTH = 150.0;
 const qreal AMMO_BAR_HEIGHT = 15.0;
+// --- 新增代码：定义弹药槽的Y坐标常量 ---
+const qreal AMMO_BAR_Y_POS = 10 + HP_BAR_HEIGHT + 20; // 从原来的 +5 改为 +20，增加间距
+
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
 {
@@ -102,15 +105,17 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player1HpBarBg = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpBar = new QGraphicsRectItem(20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player1HpText = new QGraphicsTextItem();
-    player1AmmoBarBg = new QGraphicsRectItem(20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
-    player1AmmoBar = new QGraphicsRectItem(20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    // --- 位置修改：使用新的Y坐标常量 ---
+    player1AmmoBarBg = new QGraphicsRectItem(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    player1AmmoBar = new QGraphicsRectItem(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player1AmmoText = new QGraphicsTextItem();
 
     player2HpBarBg = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpBar = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpText = new QGraphicsTextItem();
-    player2AmmoBarBg = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
-    player2AmmoBar = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    // --- 位置修改：使用新的Y坐标常量 ---
+    player2AmmoBarBg = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
+    player2AmmoBar = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player2AmmoText = new QGraphicsTextItem();
     
     // Styling
@@ -137,9 +142,11 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
 
     // Positioning
     player1HpText->setPos(20, 10 + HP_BAR_HEIGHT);
-    player1AmmoText->setPos(20 + AMMO_BAR_WIDTH + 5, 10 + HP_BAR_HEIGHT + 5);
+    // --- 位置修改：使用新的Y坐标常量 ---
+    player1AmmoText->setPos(20 + AMMO_BAR_WIDTH + 5, AMMO_BAR_Y_POS);
     player2HpText->setPos(width() - HP_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT);
-    player2AmmoText->setPos(width() - AMMO_BAR_WIDTH - 20 - 50, 10 + HP_BAR_HEIGHT + 5);
+    // --- 位置修改：使用新的Y坐标常量 ---
+    player2AmmoText->setPos(width() - AMMO_BAR_WIDTH - 20 - 50, AMMO_BAR_Y_POS);
 
     // Z-Value
     player1HpBarBg->setZValue(10);
@@ -336,7 +343,8 @@ void BattleScene::updateAmmoDisplay()
         int currentAmmo = rangedWeapon->getCurrentAmmo();
         int maxAmmo = rangedWeapon->getMaxAmmo();
         qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
-        player1AmmoBar->setRect(20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
+        // --- 位置修改：使用新的Y坐标常量 ---
+        player1AmmoBar->setRect(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
         player1AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
     } else {
         player1AmmoBarBg->setVisible(false);
@@ -352,7 +360,8 @@ void BattleScene::updateAmmoDisplay()
         int currentAmmo = rangedWeapon->getCurrentAmmo();
         int maxAmmo = rangedWeapon->getMaxAmmo();
         qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
-        player2AmmoBar->setRect(width() - AMMO_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT + 5, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
+        // --- 位置修改：使用新的Y坐标常量 ---
+        player2AmmoBar->setRect(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
         player2AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
     } else {
         player2AmmoBarBg->setVisible(false);
