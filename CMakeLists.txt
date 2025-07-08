@@ -60,7 +60,7 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/Armors/LightArmor.h
         src/Items/Armors/HeavyArmor.cpp
         src/Items/Armors/HeavyArmor.h
-        # --- 
+        # ---
         src/Items/Weapon/Knife.cpp
         src/Items/Weapon/Knife.h
         # --- 新增Buff文件 ---
@@ -85,6 +85,11 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/Weapon/Rifle.h
         src/Items/Weapon/Bullet.cpp
         src/Items/Weapon/Bullet.h
+        # --- 新增Ball武器文件 ---
+        src/Items/Weapon/Ball.cpp
+        src/Items/Weapon/Ball.h
+        src/Items/Weapon/ThrowableBall.cpp
+        src/Items/Weapon/ThrowableBall.h
 )
 target_link_libraries(qt_programming_2024
         Qt::Core

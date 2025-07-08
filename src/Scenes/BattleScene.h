@@ -17,6 +17,7 @@
 #include <QGraphicsRectItem>
 #include <QDateTime>
 #include "../Items/Weapon/Bullet.h"
+#include "../Items/Weapon/ThrowableBall.h" // <-- 新增
 
 // 前向声明 FloatingText 类
 class FloatingText;
@@ -102,6 +103,9 @@ private:
 
     void updateBullets();
     QList<Bullet*> bullets;
+    
+    void updateThrowableBalls(); // <-- 新增
+    QList<ThrowableBall*> throwableBalls; // <-- 新增
     
     QTimer *itemDropTimer;
 };

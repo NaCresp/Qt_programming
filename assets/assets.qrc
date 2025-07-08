@@ -18,5 +18,6 @@
         <file>Items\Weapon\Bullet\bullet.png</file>
         <file>Items\Armors\Light\light.png</file>
         <file>Items\Armors\Heavy\heavy.png</file>
+        <file>Items/Weapon/Ball/ball.png</file>
     </qresource>
 </RCC>

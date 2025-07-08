@@ -19,8 +19,10 @@
 #include "../Items/Medicine/Bandage.h"
 #include "../Items/Medicine/Kit.h"
 #include "../Items/Medicine/Adrenaline.h"
-#include "../Items/Armors/LightArmor.h" // 新增
-#include "../Items/Armors/HeavyArmor.h" // 新增
+#include "../Items/Armors/LightArmor.h"
+#include "../Items/Armors/HeavyArmor.h"
+#include "../Items/Weapon/Ball.h"         // <-- 新增
+#include "../Items/Weapon/ThrowableBall.h" // <-- 新增
 
 
 const qreal GRAVITY = 0.5;
@@ -216,7 +218,7 @@ void BattleScene::spawnRandomItem()
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> typeDist(0, 2); // 0: 药品, 1: 武器, 2: 护甲
     std::uniform_int_distribution<> medicineDist(0, 2); // 0: Bandage, 1: Kit, 2: Adrenaline
-    std::uniform_int_distribution<> weaponDist(0, 2); // 0: Knife, 1: Rifle, 2: Sniper
+    std::uniform_int_distribution<> weaponDist(0, 3); // 0: Knife, 1: Rifle, 2: Sniper, 3: Ball <-- 修改
     std::uniform_int_distribution<> armorDist(0, 1); // 0: LightArmor, 1: HeavyArmor
     std::uniform_real_distribution<> xPosDist(sceneRect().left() + 50, sceneRect().right() - 50);
 
@@ -236,6 +238,7 @@ void BattleScene::spawnRandomItem()
             case 0: newItem = new Knife(); break;
             case 1: newItem = new Rifle(); break;
             case 2: newItem = new Sniper(); break;
+            case 3: newItem = new Ball(); break; // <-- 新增
         }
     } else { // 生成护甲
         int armorType = armorDist(gen);
@@ -266,11 +269,12 @@ void BattleScene::update()
     Scene::update();
     updateHpDisplay();
     updateAmmoDisplay();
-    updateShieldDisplay(); // 新增
+    updateShieldDisplay();
     processAttacks();
     updateFloatingTexts();
     checkBuffs();
     updateBullets();
+    updateThrowableBalls(); // <-- 新增
 
     checkGameOver();
 }
@@ -403,15 +407,22 @@ void BattleScene::updateAmmoDisplay()
     if (!character || !character2) return;
 
     // Player 1
+    int p1CurrentAmmo = -1, p1MaxAmmo = -1;
     if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(character->getWeapon())) {
+        p1CurrentAmmo = rangedWeapon->getCurrentAmmo();
+        p1MaxAmmo = rangedWeapon->getMaxAmmo();
+    } else if (auto ballWeapon = dynamic_cast<Ball*>(character->getWeapon())) {
+        p1CurrentAmmo = ballWeapon->getCurrentAmmo();
+        p1MaxAmmo = ballWeapon->getMaxAmmo();
+    }
+
+    if (p1CurrentAmmo != -1) {
         player1AmmoBarBg->setVisible(true);
         player1AmmoBar->setVisible(true);
         player1AmmoText->setVisible(true);
-        int currentAmmo = rangedWeapon->getCurrentAmmo();
-        int maxAmmo = rangedWeapon->getMaxAmmo();
-        qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
+        qreal percent = (p1MaxAmmo > 0) ? (static_cast<qreal>(p1CurrentAmmo) / p1MaxAmmo) : 0.0;
         player1AmmoBar->setRect(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
-        player1AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
+        player1AmmoText->setPlainText(QString("%1/%2").arg(p1CurrentAmmo).arg(p1MaxAmmo));
     } else {
         player1AmmoBarBg->setVisible(false);
         player1AmmoBar->setVisible(false);
@@ -419,15 +430,22 @@ void BattleScene::updateAmmoDisplay()
     }
 
     // Player 2
+    int p2CurrentAmmo = -1, p2MaxAmmo = -1;
     if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(character2->getWeapon())) {
+        p2CurrentAmmo = rangedWeapon->getCurrentAmmo();
+        p2MaxAmmo = rangedWeapon->getMaxAmmo();
+    } else if (auto ballWeapon = dynamic_cast<Ball*>(character2->getWeapon())) {
+        p2CurrentAmmo = ballWeapon->getCurrentAmmo();
+        p2MaxAmmo = ballWeapon->getMaxAmmo();
+    }
+    
+    if (p2CurrentAmmo != -1) {
         player2AmmoBarBg->setVisible(true);
         player2AmmoBar->setVisible(true);
         player2AmmoText->setVisible(true);
-        int currentAmmo = rangedWeapon->getCurrentAmmo();
-        int maxAmmo = rangedWeapon->getMaxAmmo();
-        qreal percent = (maxAmmo > 0) ? (static_cast<qreal>(currentAmmo) / maxAmmo) : 0.0;
+        qreal percent = (p2MaxAmmo > 0) ? (static_cast<qreal>(p2CurrentAmmo) / p2MaxAmmo) : 0.0;
         player2AmmoBar->setRect(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH * percent, AMMO_BAR_HEIGHT);
-        player2AmmoText->setPlainText(QString("%1/%2").arg(currentAmmo).arg(maxAmmo));
+        player2AmmoText->setPlainText(QString("%1/%2").arg(p2CurrentAmmo).arg(p2MaxAmmo));
     } else {
         player2AmmoBarBg->setVisible(false);
         player2AmmoBar->setVisible(false);
@@ -747,6 +765,7 @@ void BattleScene::processMovement()
         }
 
         // 进一步确保我们只处理“可挂载”的物品，比如武器和药品
+        // (ThrowableBall 也是 Item 但不是 Mountable，所以不会进入这里)
         auto mountable = dynamic_cast<Mountable*>(item);
         if (!mountable || mountable->isMounted()) {
             continue;
@@ -893,3 +912,66 @@ void BattleScene::updateBullets()
         }
     }
 }
+
+// vvvvvvvvvvvv  新增函数 vvvvvvvvvvvv
+void BattleScene::updateThrowableBalls()
+{
+    throwableBalls.clear();
+    for (QGraphicsItem* item : items()) {
+        if (auto ball = dynamic_cast<ThrowableBall*>(item)) {
+            throwableBalls.append(ball);
+        }
+    }
+
+    for (int i = throwableBalls.size() - 1; i >= 0; --i)
+    {
+        ThrowableBall *ball = throwableBalls[i];
+        
+        // 应用重力并更新位置
+        ball->applyGravity(GRAVITY);
+        QPointF nextVelocity = ball->getVelocity() * (double)deltaTime / 15.0;
+        ball->setPos(ball->pos() + nextVelocity);
+
+        bool hit = false;
+        Character* owner = ball->getOwner();
+        Weapon* sourceWeapon = owner ? owner->getWeapon() : nullptr;
+
+        // 检查与玩家的碰撞
+        if (owner == character2 && ball->collidesWithItem(character))
+        {
+            character->takeDamage(ball->getDamage(), sourceWeapon);
+            hit = true;
+        }
+        else if (owner == character && ball->collidesWithItem(character2))
+        {
+            character2->takeDamage(ball->getDamage(), sourceWeapon);
+            hit = true;
+        }
+
+        // 检查与地面的碰撞
+        qreal effectiveFloorY = map->getFloorHeight();
+        if (ball->sceneBoundingRect().bottom() >= effectiveFloorY)
+        {
+            hit = true;
+        }
+
+        // 检查与平台的碰撞
+        for (auto p : platforms)
+        {
+            if (ball->collidesWithItem(p))
+            {
+                hit = true;
+                break;
+            }
+        }
+        
+        // 如果发生碰撞或出界，则移除球
+        if (hit || !sceneRect().contains(ball->pos()))
+        {
+            removeItem(ball);
+            delete ball;
+            throwableBalls.removeAt(i);
+        }
+    }
+}
+// ^^^^^^^^^^^^  新增函数 ^^^^^^^^^^^^

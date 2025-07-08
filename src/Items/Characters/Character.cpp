@@ -3,6 +3,7 @@
 #include "../Weapon/Fist.h"
 #include "../Weapon/RangedWeapon.h"
 #include "../Weapon/Knife.h"
+#include "../Weapon/Ball.h" // <-- 新增
 #include "Link.h"
 #include "../Armors/LightArmor.h"
 #include "../Armors/HeavyArmor.h"
@@ -202,15 +203,24 @@ void Character::attack()
 
 void Character::checkWeaponAmmo()
 {
+    bool replaceWeapon = false;
     if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(weapon)) {
         if (rangedWeapon->getCurrentAmmo() <= 0) {
-            rangedWeapon->deleteLater();
-
-            weapon = new Fist(this);
-            weapon->mountToParent();
+            replaceWeapon = true;
+        }
+    } else if (auto ballWeapon = dynamic_cast<Ball*>(weapon)) { // <-- 新增
+        if (ballWeapon->getCurrentAmmo() <= 0) {
+            replaceWeapon = true;
         }
     }
+
+    if (replaceWeapon) {
+        weapon->deleteLater();
+        weapon = new Fist(this);
+        weapon->mountToParent();
+    }
 }
+
 
 void Character::setPickDown(bool pickDown) { Character::pickDown = pickDown; }
 
@@ -275,7 +285,7 @@ void Character::takeDamage(int amount, Weapon *sourceWeapon)
     }
     // 重甲逻辑
     else if (auto heavyArmor = dynamic_cast<HeavyArmor*>(armor)) {
-        if (dynamic_cast<RangedWeapon*>(sourceWeapon)) {
+        if (dynamic_cast<RangedWeapon*>(sourceWeapon) || dynamic_cast<Ball*>(sourceWeapon)) { // <-- 新增
             int shieldDamage = finalDamage * 0.5;
             int playerDamage = finalDamage - shieldDamage;
             heavyArmor->takeShieldDamage(shieldDamage);
