@@ -19,6 +19,8 @@
 #include "../Items/Medicine/Bandage.h"
 #include "../Items/Medicine/Kit.h"
 #include "../Items/Medicine/Adrenaline.h"
+#include "../Items/Armors/LightArmor.h" // 新增
+#include "../Items/Armors/HeavyArmor.h" // 新增
 
 
 const qreal GRAVITY = 0.5;
@@ -26,7 +28,11 @@ const qreal HP_BAR_WIDTH = 200.0;
 const qreal HP_BAR_HEIGHT = 20.0;
 const qreal AMMO_BAR_WIDTH = 150.0;
 const qreal AMMO_BAR_HEIGHT = 15.0;
+const qreal SHIELD_BAR_WIDTH = 150.0;
+const qreal SHIELD_BAR_HEIGHT = 15.0;
+
 const qreal AMMO_BAR_Y_POS = 10 + HP_BAR_HEIGHT + 20;
+const qreal SHIELD_BAR_Y_POS = AMMO_BAR_Y_POS + AMMO_BAR_HEIGHT + 20;
 
 
 BattleScene::BattleScene(QObject *parent) : Scene(parent)
@@ -78,6 +84,10 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player1AmmoBarBg = new QGraphicsRectItem(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player1AmmoBar = new QGraphicsRectItem(20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player1AmmoText = new QGraphicsTextItem();
+    player1ShieldBarBg = new QGraphicsRectItem(20, SHIELD_BAR_Y_POS, SHIELD_BAR_WIDTH, SHIELD_BAR_HEIGHT);
+    player1ShieldBar = new QGraphicsRectItem(20, SHIELD_BAR_Y_POS, SHIELD_BAR_WIDTH, SHIELD_BAR_HEIGHT);
+    player1ShieldText = new QGraphicsTextItem();
+
 
     player2HpBarBg = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
     player2HpBar = new QGraphicsRectItem(width() - HP_BAR_WIDTH - 20, 10, HP_BAR_WIDTH, HP_BAR_HEIGHT);
@@ -85,34 +95,51 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player2AmmoBarBg = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player2AmmoBar = new QGraphicsRectItem(width() - AMMO_BAR_WIDTH - 20, AMMO_BAR_Y_POS, AMMO_BAR_WIDTH, AMMO_BAR_HEIGHT);
     player2AmmoText = new QGraphicsTextItem();
-    
+    player2ShieldBarBg = new QGraphicsRectItem(width() - SHIELD_BAR_WIDTH - 20, SHIELD_BAR_Y_POS, SHIELD_BAR_WIDTH, SHIELD_BAR_HEIGHT);
+    player2ShieldBar = new QGraphicsRectItem(width() - SHIELD_BAR_WIDTH - 20, SHIELD_BAR_Y_POS, SHIELD_BAR_WIDTH, SHIELD_BAR_HEIGHT);
+    player2ShieldText = new QGraphicsTextItem();
+
+
     // Styling
     player1HpBarBg->setBrush(Qt::darkGray);
     player1HpBar->setBrush(Qt::red);
     player1AmmoBarBg->setBrush(Qt::darkGray);
     player1AmmoBar->setBrush(Qt::yellow);
+    player1ShieldBarBg->setBrush(Qt::darkGray);
+    player1ShieldBar->setBrush(Qt::cyan);
+
 
     player2HpBarBg->setBrush(Qt::darkGray);
     player2HpBar->setBrush(Qt::red);
     player2AmmoBarBg->setBrush(Qt::darkGray);
     player2AmmoBar->setBrush(Qt::yellow);
+    player2ShieldBarBg->setBrush(Qt::darkGray);
+    player2ShieldBar->setBrush(Qt::cyan);
 
     QFont font("Arial", 12, QFont::Bold);
     player1HpText->setFont(font);
     player1AmmoText->setFont(font);
+    player1ShieldText->setFont(font);
     player2HpText->setFont(font);
     player2AmmoText->setFont(font);
+    player2ShieldText->setFont(font);
+
 
     player1HpText->setDefaultTextColor(Qt::white);
     player1AmmoText->setDefaultTextColor(Qt::white);
+    player1ShieldText->setDefaultTextColor(Qt::white);
     player2HpText->setDefaultTextColor(Qt::white);
     player2AmmoText->setDefaultTextColor(Qt::white);
+    player2ShieldText->setDefaultTextColor(Qt::white);
 
     // Positioning
     player1HpText->setPos(20, 10 + HP_BAR_HEIGHT);
     player1AmmoText->setPos(20 + AMMO_BAR_WIDTH + 5, AMMO_BAR_Y_POS);
+    player1ShieldText->setPos(20 + SHIELD_BAR_WIDTH + 5, SHIELD_BAR_Y_POS);
     player2HpText->setPos(width() - HP_BAR_WIDTH - 20, 10 + HP_BAR_HEIGHT);
     player2AmmoText->setPos(width() - AMMO_BAR_WIDTH - 20 - 50, AMMO_BAR_Y_POS);
+    player2ShieldText->setPos(width() - SHIELD_BAR_WIDTH - 20 - 50, SHIELD_BAR_Y_POS);
+
 
     // Z-Value
     player1HpBarBg->setZValue(10);
@@ -121,6 +148,9 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player1AmmoBarBg->setZValue(10);
     player1AmmoBar->setZValue(11);
     player1AmmoText->setZValue(12);
+    player1ShieldBarBg->setZValue(10);
+    player1ShieldBar->setZValue(11);
+    player1ShieldText->setZValue(12);
 
     player2HpBarBg->setZValue(10);
     player2HpBar->setZValue(11);
@@ -128,6 +158,9 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     player2AmmoBarBg->setZValue(10);
     player2AmmoBar->setZValue(11);
     player2AmmoText->setZValue(12);
+    player2ShieldBarBg->setZValue(10);
+    player2ShieldBar->setZValue(11);
+    player2ShieldText->setZValue(12);
 
     addItem(player1HpBarBg);
     addItem(player1HpBar);
@@ -135,6 +168,9 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(player1AmmoBarBg);
     addItem(player1AmmoBar);
     addItem(player1AmmoText);
+    addItem(player1ShieldBarBg);
+    addItem(player1ShieldBar);
+    addItem(player1ShieldText);
 
     addItem(player2HpBarBg);
     addItem(player2HpBar);
@@ -142,10 +178,14 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
     addItem(player2AmmoBarBg);
     addItem(player2AmmoBar);
     addItem(player2AmmoText);
+    addItem(player2ShieldBarBg);
+    addItem(player2ShieldBar);
+    addItem(player2ShieldText);
 
 
     updateHpDisplay();
     updateAmmoDisplay();
+    updateShieldDisplay();
 
     gameOverText = new QGraphicsTextItem();
     gameOverText->setFont(QFont("Arial", 50, QFont::Bold));
@@ -156,6 +196,8 @@ BattleScene::BattleScene(QObject *parent) : Scene(parent)
 
     connect(character, &Character::healthChanged, this, &BattleScene::showFloatingText);
     connect(character2, &Character::healthChanged, this, &BattleScene::showFloatingText);
+    connect(character, &Character::shieldChanged, this, &BattleScene::updateShieldDisplay);
+    connect(character2, &Character::shieldChanged, this, &BattleScene::updateShieldDisplay);
 }
 
 // --- 新增：实现 BattleScene 专属的 startLoop ---
@@ -172,9 +214,10 @@ void BattleScene::spawnRandomItem()
 {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> typeDist(0, 1); // 0: 药品, 1: 武器
+    std::uniform_int_distribution<> typeDist(0, 2); // 0: 药品, 1: 武器, 2: 护甲
     std::uniform_int_distribution<> medicineDist(0, 2); // 0: Bandage, 1: Kit, 2: Adrenaline
     std::uniform_int_distribution<> weaponDist(0, 2); // 0: Knife, 1: Rifle, 2: Sniper
+    std::uniform_int_distribution<> armorDist(0, 1); // 0: LightArmor, 1: HeavyArmor
     std::uniform_real_distribution<> xPosDist(sceneRect().left() + 50, sceneRect().right() - 50);
 
     Item* newItem = nullptr;
@@ -187,14 +230,21 @@ void BattleScene::spawnRandomItem()
             case 1: newItem = new Kit(); break;
             case 2: newItem = new Adrenaline(); break;
         }
-    } else { // 生成武器
+    } else if (itemType == 1) { // 生成武器
         int weaponType = weaponDist(gen);
         switch (weaponType) {
             case 0: newItem = new Knife(); break;
             case 1: newItem = new Rifle(); break;
             case 2: newItem = new Sniper(); break;
         }
+    } else { // 生成护甲
+        int armorType = armorDist(gen);
+        switch (armorType) {
+            case 0: newItem = new LightArmor(); break;
+            case 1: newItem = new HeavyArmor(); break;
+        }
     }
+
 
     if (newItem) {
         if (auto mountable = dynamic_cast<Mountable*>(newItem)) {
@@ -216,6 +266,7 @@ void BattleScene::update()
     Scene::update();
     updateHpDisplay();
     updateAmmoDisplay();
+    updateShieldDisplay(); // 新增
     processAttacks();
     updateFloatingTexts();
     checkBuffs();
@@ -384,6 +435,44 @@ void BattleScene::updateAmmoDisplay()
     }
 }
 
+void BattleScene::updateShieldDisplay()
+{
+    if (!character || !character2) return;
+
+    // Player 1
+    if (auto heavyArmor = dynamic_cast<HeavyArmor*>(character->getArmor())) {
+        player1ShieldBarBg->setVisible(true);
+        player1ShieldBar->setVisible(true);
+        player1ShieldText->setVisible(true);
+        int currentShield = heavyArmor->getShield();
+        int maxShield = heavyArmor->getMaxShield();
+        qreal percent = (maxShield > 0) ? (static_cast<qreal>(currentShield) / maxShield) : 0.0;
+        player1ShieldBar->setRect(20, SHIELD_BAR_Y_POS, SHIELD_BAR_WIDTH * percent, SHIELD_BAR_HEIGHT);
+        player1ShieldText->setPlainText(QString("Shield: %1/%2").arg(currentShield).arg(maxShield));
+    } else {
+        player1ShieldBarBg->setVisible(false);
+        player1ShieldBar->setVisible(false);
+        player1ShieldText->setVisible(false);
+    }
+
+    // Player 2
+    if (auto heavyArmor = dynamic_cast<HeavyArmor*>(character2->getArmor())) {
+        player2ShieldBarBg->setVisible(true);
+        player2ShieldBar->setVisible(true);
+        player2ShieldText->setVisible(true);
+        int currentShield = heavyArmor->getShield();
+        int maxShield = heavyArmor->getMaxShield();
+        qreal percent = (maxShield > 0) ? (static_cast<qreal>(currentShield) / maxShield) : 0.0;
+        player2ShieldBar->setRect(width() - SHIELD_BAR_WIDTH - 20, SHIELD_BAR_Y_POS, SHIELD_BAR_WIDTH * percent, SHIELD_BAR_HEIGHT);
+        player2ShieldText->setPlainText(QString("Shield: %1/%2").arg(currentShield).arg(maxShield));
+    } else {
+        player2ShieldBarBg->setVisible(false);
+        player2ShieldBar->setVisible(false);
+        player2ShieldText->setVisible(false);
+    }
+}
+
+
 
 void BattleScene::processInput()
 {
@@ -549,22 +638,22 @@ void BattleScene::keyReleaseEvent(QKeyEvent *event)
 void BattleScene::processAttacks()
 {
     if (!character || !character2) return;
-    // 近战攻击逻辑
+
     Weapon* weapon1 = character->getWeapon();
     Weapon* weapon2 = character2->getWeapon();
-    QRectF hitbox1(character->x() - 15, character->y() - 100, 30, 150);
-    QRectF hitbox2(character2->x() - 15, character2->y() - 100, 30, 150);
+    QRectF hitbox1(character->sceneBoundingRect());
+    QRectF hitbox2(character2->sceneBoundingRect());
 
     if (auto meleeWeapon = dynamic_cast<Knife*>(weapon1)) {
         if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox2))
         {
-            character2->takeDamage(15);
+            character2->takeDamage(15, meleeWeapon);
             meleeWeapon->hasDealtDamage = true;
         }
     } else if (auto meleeWeapon = dynamic_cast<Fist*>(weapon1)) {
         if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox2))
         {
-            character2->takeDamage(10);
+            character2->takeDamage(10, meleeWeapon);
             meleeWeapon->hasDealtDamage = true;
         }
     }
@@ -573,17 +662,18 @@ void BattleScene::processAttacks()
     if (auto meleeWeapon = dynamic_cast<Knife*>(weapon2)) {
         if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox1))
         {
-            character->takeDamage(15);
+            character->takeDamage(15, meleeWeapon);
             meleeWeapon->hasDealtDamage = true;
         }
     } else if (auto meleeWeapon = dynamic_cast<Fist*>(weapon2)) {
         if (meleeWeapon && meleeWeapon->isVisible() && !meleeWeapon->hasDealtDamage && meleeWeapon->sceneBoundingRect().intersects(hitbox1))
         {
-            character->takeDamage(10);
+            character->takeDamage(10, meleeWeapon);
             meleeWeapon->hasDealtDamage = true;
         }
     }
 }
+
 void BattleScene::processMovement()
 {
     Scene::processMovement();
@@ -636,11 +726,11 @@ void BattleScene::processMovement()
         bool shouldBeHidden = currentChar->isSquatting() && isInHidingZone;
         
         Weapon* weapon = currentChar->getWeapon();
-        Speed* buffIcon = currentChar->getSpeedBuffIcon(); 
-        Health* healthIcon = currentChar->getHealthBuffIcon(); 
+        Speed* buffIcon = currentChar->getSpeedBuffIcon();
+        Health* healthIcon = currentChar->getHealthBuffIcon();
 
         for (auto* childItem : currentChar->childItems()) {
-            if (childItem == weapon || childItem == buffIcon || childItem == healthIcon) { 
+            if (childItem == weapon || childItem == buffIcon || childItem == healthIcon) {
                 continue;
             }
             childItem->setVisible(!shouldBeHidden);
@@ -683,7 +773,7 @@ void BattleScene::processMovement()
                     if (itemRect.bottom() <= pRect.top() && (itemRect.bottom() + nextVelocity.y()) >= pRect.top())
                     {
                         effectiveFloorY = pRect.top();
-                        break; 
+                        break;
                     }
                 }
             }
@@ -745,11 +835,12 @@ Mountable *BattleScene::findNearestUnmountedMountable(const QPointF &pos, qreal 
 }
 
 
-Mountable *BattleScene::pickupMountable(Character *character, Mountable *mountable)
+Mountable* BattleScene::pickupMountable(Character *character, Mountable *mountable)
 {
     if (auto armor = dynamic_cast<Armor *>(mountable))
     {
-        return character->pickupArmor(armor);
+        character->pickupArmor(armor);
+        return nullptr; // 护甲已被装备或销毁，地上不再有东西
     }
     if (auto weapon = dynamic_cast<Weapon *>(mountable))
     {
@@ -781,15 +872,16 @@ void BattleScene::updateBullets()
 
         bool hit = false;
         Character* owner = bullet->getOwner();
+        Weapon* sourceWeapon = owner ? owner->getWeapon() : nullptr;
 
         if (owner == character2 && bullet->collidesWithItem(character))
         {
-            character->takeDamage(bullet->getDamage());
+            character->takeDamage(bullet->getDamage(), sourceWeapon);
             hit = true;
         }
         else if (owner == character && bullet->collidesWithItem(character2))
         {
-            character2->takeDamage(bullet->getDamage());
+            character2->takeDamage(bullet->getDamage(), sourceWeapon);
             hit = true;
         }
 

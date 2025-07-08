@@ -2,6 +2,11 @@
 #include "Character.h"
 #include "../Weapon/Fist.h"
 #include "../Weapon/RangedWeapon.h"
+#include "../Weapon/Knife.h"
+#include "Link.h"
+#include "../Armors/LightArmor.h"
+#include "../Armors/HeavyArmor.h"
+#include "../Armors/body.h"
 
 
 const qreal JUMP_STRENGTH = -15.0;
@@ -56,20 +61,43 @@ void Character::pickupWeapon(Weapon* newWeapon)
 
 Armor* Character::pickupArmor(Armor *newArmor)
 {
-    heal(25);
-
-    auto oldArmor = armor;
-    if (oldArmor != nullptr)
-    {
-        oldArmor->unmount();
-        oldArmor->setPos(newArmor->pos());
-        oldArmor->setParentItem(parentItem());
+    // 拾取新护甲时，旧护甲直接销毁
+    if (this->armor) {
+        // 如果旧护甲是默认的 OldShirt，不要把它丢到地上
+        if (dynamic_cast<OldShirt*>(this->armor) == nullptr) {
+            // 在删除前断开父子关系
+            this->armor->setParentItem(nullptr);
+        }
+        this->armor->deleteLater();
+        this->armor = nullptr;
     }
-    newArmor->setParentItem(this);
-    newArmor->mountToParent();
-    armor = newArmor;
-    return oldArmor;
+
+    this->armor = newArmor;
+    this->armor->setParentItem(this);
+    this->armor->mountToParent();
+    
+    // 如果是重甲，连接信号
+    if (auto heavyArmor = dynamic_cast<HeavyArmor*>(newArmor)) {
+        connect(heavyArmor, &HeavyArmor::shieldBroken, this, &Character::onShieldBroken);
+        connect(heavyArmor, &HeavyArmor::shieldChanged, this, &Character::shieldChanged);
+    }
+    emit shieldChanged(); // 通知UI更新
+
+    return nullptr; // 原护甲已销毁，返回空
 }
+
+void Character::onShieldBroken()
+{
+    if (armor) {
+        armor->deleteLater();
+        armor = nullptr;
+    }
+    // 换上默认的身体
+    armor = new OldShirt(this);
+    armor->mountToParent();
+    emit shieldChanged(); // 通知UI更新
+}
+
 
 void Character::applySpeedBuff()
 {
@@ -111,11 +139,11 @@ void Character::applyAdrenalineBuff()
     }
     healthBuffIcon->setVisible(true);
 
-    adrenalineTicks = 5; 
+    adrenalineTicks = 5;
     if (!adrenalineTimer->isActive()) {
-        adrenalineTimer->start(1000); 
+        adrenalineTimer->start(1000);
     }
-    handleAdrenalineTick(); 
+    handleAdrenalineTick();
 }
 
 void Character::handleAdrenalineTick()
@@ -177,9 +205,9 @@ void Character::checkWeaponAmmo()
     if (auto rangedWeapon = dynamic_cast<RangedWeapon*>(weapon)) {
         if (rangedWeapon->getCurrentAmmo() <= 0) {
             rangedWeapon->deleteLater();
-            
+
             weapon = new Fist(this);
-            weapon->mountToParent(); 
+            weapon->mountToParent();
         }
     }
 }
@@ -232,12 +260,36 @@ void Character::setOnGround(bool onGround) { this->onGround = onGround; }
 bool Character::isOnGround() const { return onGround; }
 bool Character::isPicking() const { return picking; }
 
-void Character::takeDamage(int amount)
+void Character::takeDamage(int amount, Weapon *sourceWeapon)
 {
-    currentHp -= amount;
-    if (currentHp < 0) { currentHp = 0; }
-    emit healthChanged(-amount, scenePos());
+    int finalDamage = amount;
+
+    // 轻甲逻辑
+    if (auto lightArmor = dynamic_cast<LightArmor*>(armor)) {
+        if (dynamic_cast<Fist*>(sourceWeapon)) {
+            finalDamage = 0; // 免疫拳头伤害
+        } else if (dynamic_cast<Knife*>(sourceWeapon)) {
+            finalDamage -= 5; // 小刀伤害减5
+            if (finalDamage < 0) finalDamage = 0;
+        }
+    }
+    // 重甲逻辑
+    else if (auto heavyArmor = dynamic_cast<HeavyArmor*>(armor)) {
+        if (dynamic_cast<RangedWeapon*>(sourceWeapon)) {
+            int shieldDamage = finalDamage * 0.5;
+            int playerDamage = finalDamage - shieldDamage;
+            heavyArmor->takeShieldDamage(shieldDamage);
+            finalDamage = playerDamage;
+        }
+    }
+
+    if (finalDamage > 0) {
+        currentHp -= finalDamage;
+        if (currentHp < 0) { currentHp = 0; }
+        emit healthChanged(-finalDamage, scenePos());
+    }
 }
+
 
 void Character::heal(int amount)
 {
@@ -249,3 +301,4 @@ void Character::heal(int amount)
 int Character::getCurrentHp() const { return currentHp; }
 int Character::getMaxHp() const { return maxHp; }
 Weapon *Character::getWeapon() const { return weapon; }
+Armor *Character::getArmor() const { return armor; }

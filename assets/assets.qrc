@@ -16,5 +16,7 @@
         <file>Items\Weapon\Sniper\sniper.png</file>
         <file>Items/Weapon/Rifle/rifle.png</file>
         <file>Items\Weapon\Bullet\bullet.png</file>
+        <file>Items\Armors\Light\light.png</file>
+        <file>Items\Armors\Heavy\heavy.png</file>
     </qresource>
 </RCC>

@@ -55,6 +55,12 @@ add_executable(qt_programming_2024 src/main.cpp
         src/Items/FloatingText.cpp         #
         src/Items/Armors/FlamebreakerArmor.cpp
         src/Items/Armors/FlamebreakerArmor.h
+        # --- 新增护甲文件 ---
+        src/Items/Armors/LightArmor.cpp
+        src/Items/Armors/LightArmor.h
+        src/Items/Armors/HeavyArmor.cpp
+        src/Items/Armors/HeavyArmor.h
+        # --- 
         src/Items/Weapon/Knife.cpp
         src/Items/Weapon/Knife.h
         # --- 新增Buff文件 ---

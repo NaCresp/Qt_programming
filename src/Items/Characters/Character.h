@@ -12,6 +12,7 @@
 #include "../Weapon/Weapon.h"
 #include "../Buff/Speed.h"
 #include "../Buff/Health.h" // 新增
+#include "../Armors/HeavyArmor.h" // 新增重甲头文件
 
 class Character : public Item
 {
@@ -45,11 +46,12 @@ public:
     void setOnGround(bool onGround);
     [[nodiscard]] bool isOnGround() const;
 
-    void takeDamage(int amount);
+    void takeDamage(int amount, Weapon* sourceWeapon); // 修改：增加伤害来源
     void heal(int amount);
     [[nodiscard]] int getCurrentHp() const;
     [[nodiscard]] int getMaxHp() const;
     [[nodiscard]] Weapon* getWeapon() const;
+    [[nodiscard]] Armor* getArmor() const; // 新增
 
     // --- 新增代码：添加Buff图标的getter ---
     [[nodiscard]] Speed* getSpeedBuffIcon() const;
@@ -69,6 +71,10 @@ public:
 
 signals:
     void healthChanged(int amount, const QPointF &position);
+    void shieldChanged(); // 新增
+
+private slots:
+    void onShieldBroken(); // 新增
 
 protected:
     HeadEquipment *headEquipment{};
